@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: casmella-controller
+  namespace: oai-tutorial
+  labels:
+    app: casmella-controller
+    component: dccf-controller
+    project: oai-tutorial
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: casmella-controller
+  template:
+    metadata:
+      labels:
+        app: casmella-controller
+        component: dccf-controller
+        project: oai-tutorial
+    spec:
+      serviceAccountName: casmella-controller
+      containers:
+        - name: controller
+          image: oai-nwdaf-dccf-controller:latest
+          imagePullPolicy: IfNotPresent  # Use local image
+          ports:
+            - name: metrics
+              containerPort: 9950
+              protocol: TCP
+          volumeMounts:
+            - name: controller-config
+              mountPath: /config/controller-config.yaml
+              subPath: controller-config.yaml
+              readOnly: true
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: controller-config
+          configMap:
+            name: casmella-controller-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: casmella-controller
+  namespace: oai-tutorial
+  labels:
+    app: casmella-controller
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 9950
+      targetPort: 9950
+      protocol: TCP
+  selector:
+    app: casmella-controller

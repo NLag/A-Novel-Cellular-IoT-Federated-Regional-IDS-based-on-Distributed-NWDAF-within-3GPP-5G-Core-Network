@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: MIT
+# Legacy file: the current dev workflow uses external PacketRusher instead of the in-cluster NR-UE release.
+
+global:
+  waitForRadio: true
+
+imagePullSecrets: []
+
+nfimage:
+  repository: docker.io/oaisoftwarealliance/oai-nr-ue
+  version: develop
+  pullPolicy: IfNotPresent
+
+config:
+  timeZone: Europe/Paris
+  rfSimServer: oai-ran
+  gdbstack: 1
+  radio: rfsim
+  useAdditionalOptions: "-E --rfsim -r 106 --numerology 1 -C 3319680000 --log_config.global_log_options level,nocolor,time"
+  imsi: "001010000000100"
+  key: "fec86ba6eb707ed08905757b1bb44b8f"
+  opc: "C42449363BBAD02B66D16BC975D77CC1"
+  pdu_sessions:
+    - dnn: oai
+      sst: 1
+      sd: "16777215"
+      type: IPv4
+
+start:
+  nrue: true
+  tcpdump: false

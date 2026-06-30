@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-nbi-gateway
+  namespace: oai-tutorial
+  labels:
+    project: oai-tutorial
+    component: nwdaf-nbi-gateway
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+  - name: admin
+    port: 8001
+    targetPort: 8001
+    protocol: TCP
+  selector:
+    app: oai-nwdaf-nbi-gateway
+    project: oai-tutorial
+    component: nwdaf-nbi-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oai-nwdaf-nbi-gateway
+  namespace: oai-tutorial
+  labels:
+    project: oai-tutorial
+    component: nwdaf-nbi-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oai-nwdaf-nbi-gateway
+      project: oai-tutorial
+      component: nwdaf-nbi-gateway
+  template:
+    metadata:
+      labels:
+        app: oai-nwdaf-nbi-gateway
+        project: oai-tutorial
+        component: nwdaf-nbi-gateway
+    spec:
+      containers:
+      - name: kong
+        image: kong:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        - containerPort: 8001
+        env:
+        - name: KONG_DATABASE
+          value: "off"
+        - name: KONG_DECLARATIVE_CONFIG
+          value: "/opt/kong/kong.yaml"
+        - name: KONG_PROXY_ACCESS_LOG
+          value: "/dev/stdout"
+        - name: KONG_ADMIN_ACCESS_LOG
+          value: "/dev/stdout"
+        - name: KONG_PROXY_ERROR_LOG
+          value: "/dev/stderr"
+        - name: KONG_ADMIN_ERROR_LOG
+          value: "/dev/stderr"
+        - name: KONG_ADMIN_LISTEN
+          value: "0.0.0.0:8001"
+        volumeMounts:
+        - name: kong-config
+          mountPath: /opt/kong
+      volumes:
+      - name: kong-config
+        configMap:
+          name: kong-config

@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-sbi
+  namespace: oai-tutorial
+  labels:
+    project: oai-tutorial
+    component: nwdaf-sbi
+spec:
+  ports:
+  - port: 80
+    targetPort: 8885
+    protocol: TCP
+  selector:
+    app: oai-nwdaf-sbi
+    project: oai-tutorial
+    component: nwdaf-sbi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oai-nwdaf-sbi
+  namespace: oai-tutorial
+  labels:
+    project: oai-tutorial
+    component: nwdaf-sbi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oai-nwdaf-sbi
+      project: oai-tutorial
+      component: nwdaf-sbi
+  template:
+    metadata:
+      labels:
+        app: oai-nwdaf-sbi
+        project: oai-tutorial
+        component: nwdaf-sbi
+    spec:
+      containers:
+      - name: sbi
+        image: oai-nwdaf-sbi:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8885
+        env:
+        # Data collection mode: DCCF_ONLY means all data comes from DCCF
+        - name: DATA_COLLECTION_MODE
+          value: "DCCF_ONLY"
+        # Disable direct AMF subscription (data comes from DCCF)
+        - name: AMF_IP_ADDR
+          value: ""
+        - name: AMF_HTTP_VERSION
+          value: "2"
+        - name: AMF_SUBSCR_ROUTE
+          value: "/namf-evts/v1"
+        - name: AMF_API_ROUTE
+          value: "/test/amf"
+        - name: AMF_NOTIFY_CORRELATION_ID
+          value: "string"
+        - name: AMF_NOTIFICATION_ID
+          value: "1"
+        - name: AMF_NOTIFICATION_FORWARD_ROUTE
+          value: "/sbi/notification/amf"
+        # Disable direct SMF subscription (data comes from DCCF)
+        - name: SMF_IP_ADDR
+          value: ""
+        - name: SMF_HTTP_VERSION
+          value: "2"
+        - name: SMF_SUBSCR_ROUTE
+          value: "/nsmf_event-exposure/v1"
+        - name: SMF_API_ROUTE
+          value: "/test/smf"
+        - name: SMF_NOTIFY_CORRELATION_ID
+          value: "string"
+        - name: SMF_NOTIFICATION_ID
+          value: "2"
+        - name: SMF_NOTIFICATION_FORWARD_ROUTE
+          value: "/sbi/notification/smf"
+        - name: MONGODB_URI
+          value: "mongodb://oai-nwdaf-database:27017"
+        - name: MONGODB_DATABASE_NAME
+          value: "testing"
+        - name: MONGODB_COLLECTION_NAME_AMF
+          value: "amf"
+        - name: MONGODB_COLLECTION_NAME_SMF
+          value: "smf"
+        - name: EVENT_NOTIFY_URI
+          value: "http://oai-nwdaf-sbi:80"
+        - name: SERVER_ADDR
+          value: "0.0.0.0:8885"
+        # NRF Registration Configuration
+        - name: NRF_ENDPOINT
+          value: "http://oai-nrf:80"
+        - name: NRF_NF_INSTANCE_ID
+          value: "nwdaf-sbi-001"
+        - name: NRF_IPV4_ADDRESS
+          value: "oai-nwdaf-sbi"
+        - name: NRF_SBI_PORT
+          value: "80"
+        - name: NRF_HEARTBEAT_TIMER
+          value: "30"
+        - name: NRF_AUTO_REGISTER
+          value: "true"
+        # DCCF Client Configuration
+        - name: DCCF_ENDPOINT
+          value: "http://oai-nwdaf-dccf:8081"

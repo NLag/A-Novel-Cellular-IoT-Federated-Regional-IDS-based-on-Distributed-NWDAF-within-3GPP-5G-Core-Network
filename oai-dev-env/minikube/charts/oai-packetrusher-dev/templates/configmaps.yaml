@@ -1,0 +1,72 @@
+{{/* SPDX-License-Identifier: MIT */}}
+{{- $root := . -}}
+{{- range $region := .Values.regions }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "oai-packetrusher-dev.configName" (dict "root" $root "region" $region) }}
+  labels:
+    {{- include "oai-packetrusher-dev.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: packetrusher-region
+    app.kubernetes.io/region: {{ $region.name }}
+data:
+  config.template.yml: |
+    gnodeb:
+      controlif:
+        ip: "__POD_IP__"
+        port: {{ $.Values.gnodeb.controlPort }}
+
+      dataif:
+        ip: "__POD_IP__"
+        port: {{ $.Values.gnodeb.dataPort }}
+
+      plmnlist:
+        mcc: {{ $.Values.global.plmn.mcc | quote }}
+        mnc: {{ $.Values.global.plmn.mnc | quote }}
+        tac: {{ default $.Values.global.plmn.tac $region.tac | quote }}
+        gnbid: {{ required "region.gnbId is required" $region.gnbId | quote }}
+
+      slicesupportlist:
+        sst: {{ $.Values.global.snssai.sst | quote }}
+        sd: {{ $.Values.global.snssai.sd | quote }}
+
+    ue:
+      hplmn:
+        mcc: {{ $.Values.global.plmn.mcc | quote }}
+        mnc: {{ $.Values.global.plmn.mnc | quote }}
+      msin: {{ include "oai-packetrusher-dev.regionMsin" (dict "region" $region) | quote }}
+
+      routingindicator: {{ $.Values.ue.routingIndicator | quote }}
+      protectionScheme: {{ $.Values.ue.protectionScheme }}
+      homeNetworkPublicKey: {{ $.Values.ue.homeNetworkPublicKey | quote }}
+      homeNetworkPublicKeyID: {{ $.Values.ue.homeNetworkPublicKeyID }}
+
+      key: {{ $.Values.ue.key | quote }}
+      opc: {{ $.Values.ue.opc | quote }}
+      amf: {{ $.Values.ue.amf | quote }}
+      sqn: {{ $.Values.ue.sqn | quote }}
+
+      dnn: {{ $.Values.ue.dnn | quote }}
+      snssai:
+        sst: {{ $.Values.global.snssai.sst | quote }}
+        sd: {{ $.Values.global.snssai.sd | quote }}
+
+      integrity:
+        nia0: {{ $.Values.ue.integrity.nia0 }}
+        nia1: {{ $.Values.ue.integrity.nia1 }}
+        nia2: {{ $.Values.ue.integrity.nia2 }}
+        nia3: {{ $.Values.ue.integrity.nia3 }}
+      ciphering:
+        nea0: {{ $.Values.ue.ciphering.nea0 }}
+        nea1: {{ $.Values.ue.ciphering.nea1 }}
+        nea2: {{ $.Values.ue.ciphering.nea2 }}
+        nea3: {{ $.Values.ue.ciphering.nea3 }}
+
+    amfif:
+      - ip: {{ $.Values.amf.host | quote }}
+        port: {{ $.Values.amf.port }}
+
+    logs:
+      level: {{ $.Values.logs.level }}
+{{- end }}

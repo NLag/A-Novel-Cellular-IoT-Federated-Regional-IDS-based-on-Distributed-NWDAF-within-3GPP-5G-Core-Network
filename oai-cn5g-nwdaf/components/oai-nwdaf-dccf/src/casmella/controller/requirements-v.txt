@@ -1,0 +1,8 @@
+requests
+argparse==1.4.*
+certifi
+urllib3[secure]==1.24.*
+pytest==7.1.*
+pytest-mock==1.11.*
+mock==3.0.*
+httmock==1.3.*

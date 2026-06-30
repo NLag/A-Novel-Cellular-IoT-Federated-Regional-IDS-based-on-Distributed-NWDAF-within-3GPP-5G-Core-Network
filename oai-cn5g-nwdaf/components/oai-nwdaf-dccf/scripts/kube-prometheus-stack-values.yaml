@@ -1,0 +1,43 @@
+alertmanager:
+  enabled: true
+
+grafana:
+  service:
+    type: NodePort
+    nodePort: 30080
+  plugins:
+  - hamedkarbasi93-nodegraphapi-datasource
+
+kubeControllerManager:
+  enabled: true
+
+coreDns:
+  enabled: true
+
+kubeEtcd:
+  enabled: true
+
+kubeScheduler:
+  enabled: true
+
+prometheus:
+  service:
+    nodePort: 30090
+    type: NodePort
+  prometheusSpec:
+    retention: 20d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 30Gi
+          volumeMode: Filesystem
+          selector:
+            matchLabels:
+              project: prometheus
+    query:
+      maxConcurrency: 10000
+      maxSamples: 500000000
+      timeout: 10m

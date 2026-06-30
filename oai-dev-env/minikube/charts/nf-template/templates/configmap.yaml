@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "template-nf.name" . }}-config
+  labels:
+    {{- include "template-nf.labels" . | nindent 4 }}
+data:
+  {{ .Values.config.fileName }}: |
+{{ .Values.config.contents | indent 4 }}

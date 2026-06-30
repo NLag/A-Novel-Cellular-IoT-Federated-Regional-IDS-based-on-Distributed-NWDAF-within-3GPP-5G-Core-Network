@@ -1,0 +1,630 @@
+# This YAML has been automatically generated using the openapi-parser tool from the Casmella project
+/bootstrapping:
+  get: BootstrappingInfoRequest
+/n5g-eir-eic/v1/equipment-status:
+  get: GetEquipmentStatus
+/naf-eventexposure/v1/subscriptions:
+  post: PostAfEventExposureSubsc
+/naf-eventexposure/v1/subscriptions/[^/]*:
+  delete: DeleteAfEventExposureSubsc
+  get: GetAfEventExposureSubsc
+  put: PutAfEventExposureSubsc
+/namf-comm/v1/non-ue-n2-messages/subscriptions:
+  post: NonUeN2InfoSubscribe
+/namf-comm/v1/non-ue-n2-messages/subscriptions/[^/]*:
+  delete: NonUeN2InfoUnSubscribe
+/namf-comm/v1/non-ue-n2-messages/transfer:
+  post: NonUeN2MessageTransfer
+/namf-comm/v1/subscriptions:
+  post: AMFStatusChangeSubscribe
+/namf-comm/v1/subscriptions/[^/]*:
+  delete: AMFStatusChangeUnSubscribe
+  put: AMFStatusChangeSubscribeModfy
+/namf-comm/v1/ue-contexts/[^/]*:
+  put: CreateUEContext
+/namf-comm/v1/ue-contexts/[^/]*/assign-ebi:
+  post: EBIAssignment
+/namf-comm/v1/ue-contexts/[^/]*/cancel-relocate:
+  post: CancelRelocateUEContext
+/namf-comm/v1/ue-contexts/[^/]*/n1-n2-messages:
+  post: N1N2MessageTransfer
+/namf-comm/v1/ue-contexts/[^/]*/n1-n2-messages/subscriptions:
+  post: N1N2MessageSubscribe
+/namf-comm/v1/ue-contexts/[^/]*/n1-n2-messages/subscriptions/[^/]*:
+  delete: N1N2MessageUnSubscribe
+/namf-comm/v1/ue-contexts/[^/]*/release:
+  post: ReleaseUEContext
+/namf-comm/v1/ue-contexts/[^/]*/relocate:
+  post: RelocateUEContext
+/namf-comm/v1/ue-contexts/[^/]*/transfer:
+  post: UEContextTransfer
+/namf-comm/v1/ue-contexts/[^/]*/transfer-update:
+  post: RegistrationStatusUpdate
+/namf-evts/v1/subscriptions:
+  post: CreateSubscription
+/namf-evts/v1/subscriptions/[^/]*:
+  delete: DeleteSubscription
+  patch: ModifySubscription
+/namf-loc/v1/[^/]*/cancel-pos-info:
+  post: CancelLocation
+/namf-loc/v1/[^/]*/provide-loc-info:
+  post: ProvideLocationInfo
+/namf-loc/v1/[^/]*/provide-pos-info:
+  post: ProvidePositioningInfo
+/namf-mt/v1/ue-contexts/[^/]*:
+  get: Provide Domain Selection Info
+/namf-mt/v1/ue-contexts/[^/]*/ue-reachind:
+  put: EnableUeReachability
+/nausf-auth/v1/rg-authentications:
+  post: POST/nausf-auth/v1/rg-authentications
+/nausf-auth/v1/ue-authentications:
+  post: POST/nausf-auth/v1/ue-authentications
+/nausf-auth/v1/ue-authentications/[^/]*/5g-aka-confirmation:
+  delete: Delete5gAkaAuthenticationResult
+  put: PUT/nausf-auth/v1/ue-authentications/[^/]*/5g-aka-confirmation
+/nausf-auth/v1/ue-authentications/[^/]*/eap-session:
+  delete: DeleteEapAuthenticationResult
+  post: EapAuthMethod
+/nausf-auth/v1/ue-authentications/deregister:
+  post: POST/nausf-auth/v1/ue-authentications/deregister
+/nausf-sorprotection/v1/[^/]*/ue-sor:
+  post: POST/nausf-sorprotection/v1/[^/]*/ue-sor
+/nausf-upuprotection/v1/[^/]*/ue-upu:
+  post: POST/nausf-upuprotection/v1/[^/]*/ue-upu
+/nbsf-management/v1/pcfBindings:
+  get: GetPCFBindings
+  post: CreatePCFBinding
+/nbsf-management/v1/pcfBindings/[^/]*:
+  delete: DeleteIndPCFBinding
+  patch: UpdateIndPCFBinding
+/nhss-ee/v1/[^/]*/ee-subscriptions:
+  post: CreateEeSubscription
+/nhss-ee/v1/[^/]*/ee-subscriptions/[^/]*:
+  delete: DeleteEeSubscription
+  patch: UpdateEeSubscription
+/nhss-sdm/v1/[^/]*/subscriptions:
+  post: Subscribe
+/nhss-sdm/v1/[^/]*/subscriptions/[^/]*:
+  delete: Unsubscribe
+  patch: Modify
+/nhss-sdm/v1/[^/]*/ue-context-in-pgw-data:
+  get: GetUeCtxInPgwData
+/nhss-ueau/v1/generate-av:
+  post: GenerateAV
+/nhss-uecm/v1/deregister-sn:
+  post: DeregisterSN
+/nhss-uecm/v1/imei-update:
+  post: IMEIUpdate
+/nlmf-broadcast/v1/cipher-key-data:
+  post: CipheringKeyData
+/nlmf-loc/v1/cancel-location:
+  post: CancelLocation
+/nlmf-loc/v1/determine-location:
+  post: DetermineLocation
+/nlmf-loc/v1/location-context-transfer:
+  post: LocationContextTransfer
+/nnrf-disc/v1/nf-instances:
+  get: SearchNFInstances
+/nnrf-disc/v1/searches/[^/]*:
+  get: RetrieveStoredSearch
+/nnrf-disc/v1/searches/[^/]*/complete:
+  get: RetrieveCompleteSearch
+/nnrf-nfm/v1/nf-instances:
+  get: GetNFInstances
+  options: OptionsNFInstances
+/nnrf-nfm/v1/nf-instances/[^/]*:
+  delete: DeregisterNFInstance
+  get: GetNFInstance
+  patch: UpdateNFInstance
+  put: RegisterNFInstance
+/nnrf-nfm/v1/subscriptions:
+  post: CreateSubscription
+/nnrf-nfm/v1/subscriptions/[^/]*:
+  delete: RemoveSubscription
+  patch: UpdateSubscription
+/nnssaaf-nssaa/v1/slice-authentications:
+  post: CreateSliceAuthenticationContext
+/nnssaaf-nssaa/v1/slice-authentications/[^/]*:
+  put: ConfirmSliceAuthentication
+/nnssf-nssaiavailability/v1/nssai-availability:
+  options: NSSAIAvailabilityOptions
+/nnssf-nssaiavailability/v1/nssai-availability/[^/]*:
+  delete: NSSAIAvailabilityDelete
+  patch: NSSAIAvailabilityPatch
+  put: NSSAIAvailabilityPut
+/nnssf-nssaiavailability/v1/nssai-availability/subscriptions:
+  post: NSSAIAvailabilityPost
+/nnssf-nssaiavailability/v1/nssai-availability/subscriptions/[^/]*:
+  delete: NSSAIAvailabilityUnsubscribe
+  patch: NSSAIAvailabilitySubModifyPatch
+/nnssf-nsselection/v2/network-slice-information:
+  get: NSSelectionGet
+/nnwdaf-analyticsinfo/v1/analytics:
+  get: GetNWDAFAnalytics
+/nnwdaf-eventssubscription/v1/subscriptions:
+  post: CreateNWDAFEventsSubscription
+/nnwdaf-eventssubscription/v1/subscriptions/[^/]*:
+  delete: DeleteNWDAFEventsSubscription
+  put: UpdateNWDAFEventsSubscription
+/npcf-am-policy-control/v1/policies:
+  post: CreateIndividualAMPolicyAssociation
+/npcf-am-policy-control/v1/policies/[^/]*:
+  delete: DeleteIndividualAMPolicyAssociation
+  get: ReadIndividualAMPolicyAssociation
+/npcf-am-policy-control/v1/policies/[^/]*/update:
+  post: ReportObservedEventTriggersForIndividualAMPolicyAssociation
+/npcf-bdtpolicycontrol/v1/bdtpolicies:
+  post: CreateBDTPolicy
+/npcf-bdtpolicycontrol/v1/bdtpolicies/[^/]*:
+  get: GetBDTPolicy
+  patch: UpdateBDTPolicy
+/npcf-policyauthorization/v1/app-sessions:
+  post: PostAppSessions
+/npcf-policyauthorization/v1/app-sessions/[^/]*:
+  get: GetAppSession
+  patch: ModAppSession
+/npcf-policyauthorization/v1/app-sessions/[^/]*/delete:
+  post: DeleteAppSession
+/npcf-policyauthorization/v1/app-sessions/[^/]*/events-subscription:
+  delete: DeleteEventsSubsc
+  put: updateEventsSubsc
+/npcf-policyauthorization/v1/app-sessions/pcscf-restoration:
+  post: PcscfRestoration
+/npcf-smpolicycontrol/v1/sm-policies:
+  post: CreateSMPolicy
+/npcf-smpolicycontrol/v1/sm-policies/[^/]*:
+  get: GetSMPolicy
+/npcf-smpolicycontrol/v1/sm-policies/[^/]*/delete:
+  post: DeleteSMPolicy
+/npcf-smpolicycontrol/v1/sm-policies/[^/]*/update:
+  post: UpdateSMPolicy
+/npcf-ue-policy-control/v1/policies:
+  post: CreateIndividualUEPolicyAssociation
+/npcf-ue-policy-control/v1/policies/[^/]*:
+  delete: DeleteIndividualUEPolicyAssociation
+  get: ReadIndividualUEPolicyAssociation
+/npcf-ue-policy-control/v1/policies/[^/]*/update:
+  post: ReportObservedEventTriggersForIndividualUEPolicyAssociation
+/nsmf-pdusession/v1/pdu-sessions:
+  post: PostPduSessions
+/nsmf-pdusession/v1/pdu-sessions/[^/]*/modify:
+  post: UpdatePduSession
+/nsmf-pdusession/v1/pdu-sessions/[^/]*/release:
+  post: ReleasePduSession
+/nsmf-pdusession/v1/pdu-sessions/[^/]*/retrieve:
+  post: RetrievePduSession
+/nsmf-pdusession/v1/pdu-sessions/[^/]*/transfer-mo-data:
+  post: TransferMoData
+/nsmf-pdusession/v1/sm-contexts:
+  post: PostSmContexts
+/nsmf-pdusession/v1/sm-contexts/[^/]*/modify:
+  post: UpdateSmContext
+/nsmf-pdusession/v1/sm-contexts/[^/]*/release:
+  post: ReleaseSmContext
+/nsmf-pdusession/v1/sm-contexts/[^/]*/retrieve:
+  post: RetrieveSmContext
+/nsmf-pdusession/v1/sm-contexts/[^/]*/send-mo-data:
+  post: SendMoData
+/nsmf_event-exposure/v1/subscriptions:
+  post: CreateIndividualSubcription
+/nsmf_event-exposure/v1/subscriptions/[^/]*:
+  delete: DeleteIndividualSubcription
+  get: GetIndividualSubcription
+  put: ReplaceIndividualSubcription
+/nsmsf-sms/v2/ue-contexts/[^/]*:
+  delete: SMServiceDeactivation
+  put: SMServiceActivation
+/nsmsf-sms/v2/ue-contexts/[^/]*/sendsms:
+  post: SendSMS
+/nudm-ee/v1/[^/]*/ee-subscriptions:
+  post: CreateEeSubscription
+/nudm-ee/v1/[^/]*/ee-subscriptions/[^/]*:
+  delete: DeleteEeSubscription
+  patch: UpdateEeSubscription
+/nudm-mt/v1/[^/]*:
+  get: QueryUeInfo
+/nudm-mt/v1/[^/]*/loc-info/provide-loc-info:
+  post: ProvideLocationInfo
+/nudm-niddau/v1/[^/]*/authorize:
+  post: AuthorizeNiddData
+/nudm-pp/v1/5g-vn-groups/[^/]*:
+  delete: Delete 5G VN Group
+  get: Get 5G VN Group
+  patch: Modify 5G VN Group
+  put: Create 5G VN Group
+/nudm-pp/v1/[^/]*/pp-data:
+  patch: Update
+/nudm-sdm/v2/[^/]*:
+  get: GetDataSets
+/nudm-sdm/v2/[^/]*/am-data:
+  get: GetAmData
+/nudm-sdm/v2/[^/]*/am-data/cag-ack:
+  put: CAG Ack
+/nudm-sdm/v2/[^/]*/am-data/ecr-data:
+  get: GetEcrData
+/nudm-sdm/v2/[^/]*/am-data/sor-ack:
+  put: SorAckInfo
+/nudm-sdm/v2/[^/]*/am-data/subscribed-snssais-ack:
+  put: S-NSSAIs Ack
+/nudm-sdm/v2/[^/]*/am-data/update-sor:
+  post: Update SOR Info
+/nudm-sdm/v2/[^/]*/am-data/upu-ack:
+  put: UpuAck
+/nudm-sdm/v2/[^/]*/id-translation-result:
+  get: GetSupiOrGpsi
+/nudm-sdm/v2/[^/]*/lcs-bca-data:
+  get: GetLcsBcaData
+/nudm-sdm/v2/[^/]*/lcs-mo-data:
+  get: GetLcsMoData
+/nudm-sdm/v2/[^/]*/lcs-privacy-data:
+  get: GetLcsPrivacyData
+/nudm-sdm/v2/[^/]*/nssai:
+  get: GetNSSAI
+/nudm-sdm/v2/[^/]*/sdm-subscriptions:
+  post: Subscribe
+/nudm-sdm/v2/[^/]*/sdm-subscriptions/[^/]*:
+  delete: Unsubscribe
+  patch: Modify
+/nudm-sdm/v2/[^/]*/sm-data:
+  get: GetSmData
+/nudm-sdm/v2/[^/]*/smf-select-data:
+  get: GetSmfSelData
+/nudm-sdm/v2/[^/]*/sms-data:
+  get: GetSmsData
+/nudm-sdm/v2/[^/]*/sms-mng-data:
+  get: GetSmsMngtData
+/nudm-sdm/v2/[^/]*/trace-data:
+  get: GetTraceConfigData
+/nudm-sdm/v2/[^/]*/ue-context-in-amf-data:
+  get: GetUeCtxInAmfData
+/nudm-sdm/v2/[^/]*/ue-context-in-smf-data:
+  get: GetUeCtxInSmfData
+/nudm-sdm/v2/[^/]*/ue-context-in-smsf-data:
+  get: GetUeCtxInSmsfData
+/nudm-sdm/v2/[^/]*/v2x-data:
+  get: GetV2xData
+/nudm-sdm/v2/group-data/group-identifiers:
+  get: GetGroupIdentifiers
+/nudm-sdm/v2/shared-data:
+  get: GetSharedData
+/nudm-sdm/v2/shared-data-subscriptions:
+  post: SubscribeToSharedData
+/nudm-sdm/v2/shared-data-subscriptions/[^/]*:
+  delete: UnsubscribeForSharedData
+  patch: ModifySharedDataSubs
+/nudm-ueau/v1/[^/]*/auth-events:
+  post: ConfirmAuth
+/nudm-ueau/v1/[^/]*/auth-events/[^/]*:
+  put: DeleteAuth
+/nudm-ueau/v1/[^/]*/hss-security-information/[^/]*/generate-av:
+  post: GenerateAv
+/nudm-ueau/v1/[^/]*/security-information-rg:
+  get: GetRgAuthData
+/nudm-ueau/v1/[^/]*/security-information/generate-auth-data:
+  post: GenerateAuthData
+/nudm-uecm/v1/[^/]*/registrations:
+  get: GetRegistrations
+/nudm-uecm/v1/[^/]*/registrations/amf-3gpp-access:
+  get: Get3GppRegistration
+  patch: Update3GppRegistration
+  put: 3GppRegistration
+/nudm-uecm/v1/[^/]*/registrations/amf-3gpp-access/dereg-amf:
+  post: deregAMF
+/nudm-uecm/v1/[^/]*/registrations/amf-3gpp-access/pei-update:
+  post: PeiUpdate
+/nudm-uecm/v1/[^/]*/registrations/amf-non-3gpp-access:
+  get: GetNon3GppRegistration
+  patch: UpdateNon3GppRegistration
+  put: Non3GppRegistration
+/nudm-uecm/v1/[^/]*/registrations/ip-sm-gw:
+  delete: IpSmGwDeregistration
+  get: GetIpSmGwRegistration
+  put: IpSmGwRegistration
+/nudm-uecm/v1/[^/]*/registrations/location:
+  get: GetLocationInfo
+/nudm-uecm/v1/[^/]*/registrations/smf-registrations:
+  get: GetSmfRegistration
+/nudm-uecm/v1/[^/]*/registrations/smf-registrations/[^/]*:
+  delete: SmfDeregistration
+  get: RetrieveSmfRegistration
+  put: Registration
+/nudm-uecm/v1/[^/]*/registrations/smsf-3gpp-access:
+  delete: 3GppSmsfDeregistration
+  get: Get3GppSmsfRegistration
+  put: 3GppSmsfRegistration
+/nudm-uecm/v1/[^/]*/registrations/smsf-non-3gpp-access:
+  delete: Non3GppSmsfDeregistration
+  get: GetNon3GppSmsfRegistration
+  put: Non3GppSmsfRegistration
+/nudm-uecm/v1/restore-pcscf:
+  post: Trigger P-CSCF Restoration
+/nudr-dr/v2/application-data/bdtPolicyData:
+  get: ReadBdtPolicyData
+/nudr-dr/v2/application-data/bdtPolicyData/[^/]*:
+  delete: DeleteIndividualAppliedBdtPolicyData
+  patch: UpdateIndividualAppliedBdtPolicyData
+  put: CreateIndividualAppliedBdtPolicyData
+/nudr-dr/v2/application-data/influenceData:
+  get: ReadInfluenceData
+/nudr-dr/v2/application-data/influenceData/[^/]*:
+  delete: DeleteIndividualInfluenceData
+  patch: UpdateIndividualInfluenceData
+  put: CreateOrReplaceIndividualInfluenceData
+/nudr-dr/v2/application-data/influenceData/subs-to-notify:
+  get: ReadInfluenceDataSubscriptions
+  post: CreateIndividualInfluenceDataSubscription
+/nudr-dr/v2/application-data/influenceData/subs-to-notify/[^/]*:
+  delete: DeleteIndividualInfluenceDataSubscription
+  get: ReadIndividualInfluenceDataSubscription
+  put: ReplaceIndividualInfluenceDataSubscription
+/nudr-dr/v2/application-data/iptvConfigData:
+  get: ReadIPTVCongifurationData
+/nudr-dr/v2/application-data/iptvConfigData/[^/]*:
+  delete: DeleteIndividualIPTVConfigurationData
+  patch: PartialReplaceIndividualIPTVConfigurationData
+  put: CreateOrReplaceIndividualIPTVConfigurationData
+/nudr-dr/v2/application-data/pfds:
+  get: ReadPFDData
+/nudr-dr/v2/application-data/pfds/[^/]*:
+  delete: DeleteIndividualPFDData
+  get: ReadIndividualPFDData
+  put: CreateOrReplaceIndividualPFDData
+/nudr-dr/v2/application-data/serviceParamData:
+  get: ReadServiceParameterData
+/nudr-dr/v2/application-data/serviceParamData/[^/]*:
+  delete: DeleteIndividualServiceParameterData
+  patch: UpdateIndividualServiceParameterData
+  put: CreateOrReplaceServiceParameterData
+/nudr-dr/v2/application-data/subs-to-notify:
+  get: ReadApplicationDataChangeSubscriptions
+  post: CreateIndividualApplicationDataSubscription
+/nudr-dr/v2/application-data/subs-to-notify/[^/]*:
+  delete: DeleteIndividualApplicationDataSubscription
+  get: ReadIndividualApplicationDataSubscription
+  parameters: PARAMETERS/nudr-dr/v2/application-data/subs-to-notify/[^/]*
+  put: ReplaceIndividualApplicationDataSubscription
+/nudr-dr/v2/exposure-data/[^/]*/access-and-mobility-data:
+  delete: DeleteAccessAndMobilityData
+  get: QueryAccessAndMobilityData
+  patch: UpdateAccessAndMobilityData
+  put: CreateOrReplaceAccessAndMobilityData
+/nudr-dr/v2/exposure-data/[^/]*/session-management-data/[^/]*:
+  delete: DeleteSessionManagementData
+  get: QuerySessionManagementData
+  put: CreateOrReplaceSessionManagementData
+/nudr-dr/v2/exposure-data/subs-to-notify:
+  post: CreateIndividualExposureDataSubscription
+/nudr-dr/v2/exposure-data/subs-to-notify/[^/]*:
+  delete: DeleteIndividualExposureDataSubscription
+  put: ReplaceIndividualExposureDataSubscription
+/nudr-dr/v2/policy-data/bdt-data:
+  get: ReadBdtData
+/nudr-dr/v2/policy-data/bdt-data/[^/]*:
+  delete: DeleteIndividualBdtData
+  get: ReadIndividualBdtData
+  parameters: PARAMETERS/nudr-dr/v2/policy-data/bdt-data/[^/]*
+  patch: UpdateIndividualBdtData
+  put: CreateIndividualBdtData
+/nudr-dr/v2/policy-data/plmns/[^/]*/ue-policy-set:
+  get: ReadPlmnUePolicySet
+  parameters: PARAMETERS/nudr-dr/v2/policy-data/plmns/[^/]*/ue-policy-set
+/nudr-dr/v2/policy-data/sponsor-connectivity-data/[^/]*:
+  get: ReadSponsorConnectivityData
+  parameters: PARAMETERS/nudr-dr/v2/policy-data/sponsor-connectivity-data/[^/]*
+/nudr-dr/v2/policy-data/subs-to-notify:
+  post: CreateIndividualPolicyDataSubscription
+/nudr-dr/v2/policy-data/subs-to-notify/[^/]*:
+  delete: DeleteIndividualPolicyDataSubscription
+  parameters: PARAMETERS/nudr-dr/v2/policy-data/subs-to-notify/[^/]*
+  put: ReplaceIndividualPolicyDataSubscription
+/nudr-dr/v2/policy-data/ues/[^/]*/am-data:
+  get: ReadAccessAndMobilityPolicyData
+  parameters: PARAMETERS/nudr-dr/v2/policy-data/ues/[^/]*/am-data
+/nudr-dr/v2/policy-data/ues/[^/]*/operator-specific-data:
+  get: ReadOperatorSpecificData
+  patch: UpdateOperatorSpecificData
+  put: ReplaceOperatorSpecificData
+/nudr-dr/v2/policy-data/ues/[^/]*/sm-data:
+  get: ReadSessionManagementPolicyData
+  patch: UpdateSessionManagementPolicyData
+/nudr-dr/v2/policy-data/ues/[^/]*/sm-data/[^/]*:
+  delete: DeleteUsageMonitoringInformation
+  get: ReadUsageMonitoringInformation
+  put: CreateUsageMonitoringResource
+/nudr-dr/v2/policy-data/ues/[^/]*/ue-policy-set:
+  get: ReadUEPolicySet
+  parameters: PARAMETERS/nudr-dr/v2/policy-data/ues/[^/]*/ue-policy-set
+  patch: UpdateUEPolicySet
+  put: CreateOrReplaceUEPolicySet
+/nudr-dr/v2/subscription-data/[^/]*/[^/]*/provisioned-data:
+  get: QueryProvisionedData
+/nudr-dr/v2/subscription-data/[^/]*/[^/]*/provisioned-data/am-data:
+  get: QueryAmData
+/nudr-dr/v2/subscription-data/[^/]*/[^/]*/provisioned-data/lcs-bca-data:
+  get: QueryLcsBcaData
+/nudr-dr/v2/subscription-data/[^/]*/[^/]*/provisioned-data/sm-data:
+  get: QuerySmData
+/nudr-dr/v2/subscription-data/[^/]*/[^/]*/provisioned-data/smf-selection-subscription-data:
+  get: QuerySmfSelectData
+/nudr-dr/v2/subscription-data/[^/]*/[^/]*/provisioned-data/sms-data:
+  get: QuerySmsData
+/nudr-dr/v2/subscription-data/[^/]*/[^/]*/provisioned-data/sms-mng-data:
+  get: QuerySmsMngData
+/nudr-dr/v2/subscription-data/[^/]*/[^/]*/provisioned-data/trace-data:
+  get: QueryTraceData
+/nudr-dr/v2/subscription-data/[^/]*/authentication-data/authentication-status:
+  delete: DeleteAuthenticationStatus
+  get: QueryAuthenticationStatus
+  put: CreateAuthenticationStatus
+/nudr-dr/v2/subscription-data/[^/]*/authentication-data/authentication-status/[^/]*:
+  delete: DeleteIndividualAuthenticationStatus
+  get: QueryIndividualAuthenticationStatus
+  put: CreateIndividualAuthenticationStatus
+/nudr-dr/v2/subscription-data/[^/]*/authentication-data/authentication-subscription:
+  get: QueryAuthSubsData
+  patch: ModifyAuthenticationSubscription
+/nudr-dr/v2/subscription-data/[^/]*/context-data:
+  get: QueryContextData
+/nudr-dr/v2/subscription-data/[^/]*/context-data/amf-3gpp-access:
+  get: QueryAmfContext3gpp
+  patch: AmfContext3gpp
+  put: CreateAmfContext3gpp
+/nudr-dr/v2/subscription-data/[^/]*/context-data/amf-non-3gpp-access:
+  get: QueryAmfContextNon3gpp
+  patch: AmfContextNon3gpp
+  put: CreateAmfContextNon3gpp
+/nudr-dr/v2/subscription-data/[^/]*/context-data/ee-subscriptions:
+  get: Queryeesubscriptions
+  post: CreateEeSubscriptions
+/nudr-dr/v2/subscription-data/[^/]*/context-data/ee-subscriptions/[^/]*:
+  delete: RemoveeeSubscriptions
+  get: QueryeeSubscription
+  patch: ModifyEesubscription
+  put: UpdateEesubscriptions
+/nudr-dr/v2/subscription-data/[^/]*/context-data/ee-subscriptions/[^/]*/amf-subscriptions:
+  delete: RemoveAmfSubscriptionsInfo
+  get: GetAmfSubscriptionInfo
+  patch: ModifyAmfSubscriptionInfo
+  put: Create AMF Subscriptions
+/nudr-dr/v2/subscription-data/[^/]*/context-data/ee-subscriptions/[^/]*/smf-subscriptions:
+  delete: RemoveSmfSubscriptionsInfo
+  get: GetSmfSubscriptionInfo
+  patch: ModifySmfSubscriptionInfo
+  put: Create SMF Subscriptions
+/nudr-dr/v2/subscription-data/[^/]*/context-data/ip-sm-gw:
+  delete: DeleteIpSmGwContext
+  get: QueryIpSmGwContext
+  patch: ModifyIpSmGwContext
+  put: CreateIpSmGwContext
+/nudr-dr/v2/subscription-data/[^/]*/context-data/location:
+  get: QueryUeLocation
+/nudr-dr/v2/subscription-data/[^/]*/context-data/mwd:
+  delete: DeleteMessageWaitingData
+  get: QueryMessageWaitingData
+  patch: ModifyMessageWaitingData
+  put: CreateMessageWaitingData
+/nudr-dr/v2/subscription-data/[^/]*/context-data/sdm-subscriptions:
+  get: Querysdmsubscriptions
+  post: CreateSdmSubscriptions
+/nudr-dr/v2/subscription-data/[^/]*/context-data/sdm-subscriptions/[^/]*:
+  delete: RemovesdmSubscriptions
+  get: QuerysdmSubscription
+  patch: ModifysdmSubscription
+  put: Updatesdmsubscriptions
+/nudr-dr/v2/subscription-data/[^/]*/context-data/smf-registrations:
+  get: QuerySmfRegList
+/nudr-dr/v2/subscription-data/[^/]*/context-data/smf-registrations/[^/]*:
+  delete: DeleteSmfContext
+  get: QuerySmfRegistration
+  put: CreateSmfContextNon3gpp
+/nudr-dr/v2/subscription-data/[^/]*/context-data/smsf-3gpp-access:
+  delete: DeleteSmsfContext3gpp
+  get: QuerySmsfContext3gpp
+  put: CreateSmsfContext3gpp
+/nudr-dr/v2/subscription-data/[^/]*/context-data/smsf-non-3gpp-access:
+  delete: DeleteSmsfContextNon3gpp
+  get: QuerySmsfContextNon3gpp
+  put: CreateSmsfContextNon3gpp
+/nudr-dr/v2/subscription-data/[^/]*/coverage-restriction-data:
+  get: QueryCoverageRestrictionData
+/nudr-dr/v2/subscription-data/[^/]*/ee-profile-data:
+  get: QueryEEData
+/nudr-dr/v2/subscription-data/[^/]*/identity-data:
+  get: GetIdentityData
+/nudr-dr/v2/subscription-data/[^/]*/lcs-mo-data:
+  get: QueryLcsMoData
+/nudr-dr/v2/subscription-data/[^/]*/lcs-privacy-data:
+  get: QueryLcsPrivacyData
+/nudr-dr/v2/subscription-data/[^/]*/nidd-authorization-data:
+  get: GetNiddAuData
+/nudr-dr/v2/subscription-data/[^/]*/operator-determined-barring-data:
+  get: GetOdbData
+/nudr-dr/v2/subscription-data/[^/]*/operator-specific-data:
+  get: QueryOperSpecData
+  patch: ModifyOperSpecData
+/nudr-dr/v2/subscription-data/[^/]*/pp-data:
+  get: GetppData
+  patch: ModifyPpData
+/nudr-dr/v2/subscription-data/[^/]*/ue-update-confirmation-data/sor-data:
+  get: QueryAuthSoR
+  put: CreateAuthenticationSoR
+/nudr-dr/v2/subscription-data/[^/]*/ue-update-confirmation-data/subscribed-cag:
+  get: QueryCagAck
+  put: CreateCagUpdateAck
+/nudr-dr/v2/subscription-data/[^/]*/ue-update-confirmation-data/subscribed-snssais:
+  get: QueryNssaiAck
+  put: Create NSSAI update ack
+/nudr-dr/v2/subscription-data/[^/]*/ue-update-confirmation-data/upu-data:
+  get: QueryAuthUPU
+  put: CreateAuthenticationUPU
+/nudr-dr/v2/subscription-data/[^/]*/v2x-data:
+  get: QueryV2xData
+/nudr-dr/v2/subscription-data/group-data/5g-vn-groups:
+  get: Query5GVnGroup
+/nudr-dr/v2/subscription-data/group-data/5g-vn-groups/[^/]*:
+  delete: Delete5GVnGroup
+  get: Get5GVnGroupConfiguration
+  patch: Modify5GVnGroup
+  put: Create5GVnGroup
+/nudr-dr/v2/subscription-data/group-data/5g-vn-groups/internal:
+  get: Query5GVnGroupInternal
+/nudr-dr/v2/subscription-data/group-data/[^/]*/ee-subscriptions:
+  get: QueryEeGroupSubscriptions
+  post: CreateEeGroupSubscriptions
+/nudr-dr/v2/subscription-data/group-data/[^/]*/ee-subscriptions/[^/]*:
+  delete: RemoveEeGroupSubscriptions
+  get: QueryEeGroupSubscription
+  patch: ModifyEeGroupSubscription
+  put: UpdateEeGroupSubscriptions
+/nudr-dr/v2/subscription-data/group-data/group-identifiers:
+  get: GetGroupIdentifiers
+/nudr-dr/v2/subscription-data/shared-data:
+  get: GetSharedData
+/nudr-dr/v2/subscription-data/subs-to-notify:
+  delete: RemoveMultipleSubscriptionDataSubscriptions
+  get: QuerySubsToNotify
+  post: SubscriptionDataSubscriptions
+/nudr-dr/v2/subscription-data/subs-to-notify/[^/]*:
+  delete: RemovesubscriptionDataSubscriptions
+  get: QuerySubscriptionDataSubscriptions
+  patch: ModifysubscriptionDataSubscription
+/nudr-group-id-map/v1/nf-group-ids:
+  get: GetNfGroupIDs
+/nudsf-dr/v1/[^/]*/[^/]*/records:
+  description: DESCRIPTION/nudsf-dr/v1/[^/]*/[^/]*/records
+  get: SearchRecord
+  summary: SUMMARY/nudsf-dr/v1/[^/]*/[^/]*/records
+/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*:
+  delete: DeleteRecord
+  description: DESCRIPTION/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*
+  get: GetRecord
+  put: CreateOrModifyRecord
+  summary: SUMMARY/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*
+/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/blocks:
+  description: DESCRIPTION/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/blocks
+  get: GetBlockList
+  summary: SUMMARY/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/blocks
+/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/blocks/[^/]*:
+  delete: DeleteBlock
+  description: DESCRIPTION/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/blocks/[^/]*
+  get: GetBlock
+  put: CreateOrModifyBlock
+  summary: SUMMARY/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/blocks/[^/]*
+/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/meta:
+  description: DESCRIPTION/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/meta
+  get: GetMeta
+  patch: UpdateMeta
+  summary: SUMMARY/nudsf-dr/v1/[^/]*/[^/]*/records/[^/]*/meta
+/nudsf-dr/v1/[^/]*/[^/]*/subs-to-notify:
+  description: DESCRIPTION/nudsf-dr/v1/[^/]*/[^/]*/subs-to-notify
+  get: GetNotificationSubscriptions
+  summary: SUMMARY/nudsf-dr/v1/[^/]*/[^/]*/subs-to-notify
+/nudsf-dr/v1/[^/]*/[^/]*/subs-to-notify/[^/]*:
+  delete: DeleteNotificationSubscription
+  description: DESCRIPTION/nudsf-dr/v1/[^/]*/[^/]*/subs-to-notify/[^/]*
+  get: GetNotificationSubscription
+  patch: UpdateNotificationSubscription
+  put: CreateAndUpdateNotificationSubscription
+  summary: SUMMARY/nudsf-dr/v1/[^/]*/[^/]*/subs-to-notify/[^/]*
+/oauth2/token:
+  post: AccessTokenRequest

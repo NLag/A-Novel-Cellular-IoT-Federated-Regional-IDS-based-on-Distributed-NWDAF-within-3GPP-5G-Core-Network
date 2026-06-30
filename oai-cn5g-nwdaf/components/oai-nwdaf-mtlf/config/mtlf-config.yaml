@@ -1,0 +1,103 @@
+# MTLF (Model Training Logical Function) Identity
+# 3GPP TS 29.520 - Nnwdaf_MLModelTraining / Nmtlf_MLModelTraining
+mtlf:
+  nfInstanceId: "nwdaf-mtlf-001"
+  nfType: "NWDAF"
+  ipv4Address: ""
+  nfServices:
+    # TS 29.520 Table 6.1.3.2-1: standardized service name for MTLF
+    - serviceInstanceId: "nnwdaf-mlmodelprovision-001"
+      serviceName: "nnwdaf-mlmodelprovision"
+      versions:
+        - apiVersionInUri: "v1"
+          apiFullVersion: "1.0.0"
+      scheme: "http"
+      ipEndPoints:
+        - ipv4Address: ""
+          port: 8082
+
+# NRF Registration (3GPP TS 29.510)
+nrf:
+  endpoint: "http://oai-nrf:80"
+  auto_register: true
+  heartbeat_interval: 30
+
+# MTLF Server
+server:
+  port: 8082
+  api_version: "v1"
+
+# DCCF subscription for training data (3GPP TS 29.574 Ndccf_DataManagement)
+dccf:
+  endpoint: "http://oai-nwdaf-dccf:8081"
+  notification_uri: "http://oai-nwdaf-mtlf-service:8082/mtlf-internal/dccf-notifications"
+  event_types:
+    - "NF_LOAD"
+    - "UE_MOBILITY"
+    - "QOS_SUSTAINABILITY"
+  protocols:
+    - "http2"
+    - "ngap"
+    - "pfcp"
+  notification_interval: 60
+
+# IDS packet-classification training configuration
+training:
+  # Path to the unified parametrized training entrypoint (dispatches by scenario)
+  script_path: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/mtlf_train.py"
+  # Directory to store trained model artifacts
+  models_dir: "/oai-5g-storage/IDS_RELATED_STORAGE/MODEL"
+  # Default training epochs (can be overridden per job)
+  default_epochs: 100
+  # Python interpreter to use
+  python_bin: "python3"
+  pass_output_dir_args: true
+  working_dir: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research"
+  research_workspace: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research"
+  normalized_package: "nwdaf_mtlf_model_training"
+
+training_scenario:
+  scenario: "regional"
+  model_architecture: "Transformer"
+  model_architectures:
+    MLP:
+      hidden_dim: 256
+    CNN: {}
+    RNN:
+      hidden_dim: 256
+      num_layers: 1
+    GRU:
+      hidden_dim: 256
+      num_layers: 1
+    LSTM:
+      hidden_dim: 256
+      num_layers: 1
+    Transformer:
+      hidden_dim: 256
+      nhead: 8
+      num_layers: 2
+  working_dir: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research"
+  research_workspace: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research"
+  normalized_package: "nwdaf_mtlf_model_training"
+  pass_output_dir_args: true
+  record_outputs: true
+  max_recorded_files: 1000
+  metadata_exclude_dirs:
+    - datasets
+    - .git
+    - __pycache__
+    - .venv
+  # All scenarios dispatch through the unified entrypoint; it selects the
+  # procedure from NWDAF_MTLF_SCENARIO (set by the training manager).
+  scripts:
+    centralized: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/mtlf_train.py"
+    regional: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/mtlf_train.py"
+    federated-averaging: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/mtlf_train.py"
+    federated-distillation: "/oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/mtlf_train.py"
+
+shared_storage:
+  root: "/oai-5g-storage"
+  metadata_enabled: true
+
+# Callback URI for this MTLF (AnLF subscribes here for model-ready events)
+callback_uri: "http://oai-nwdaf-mtlf-service:8082"

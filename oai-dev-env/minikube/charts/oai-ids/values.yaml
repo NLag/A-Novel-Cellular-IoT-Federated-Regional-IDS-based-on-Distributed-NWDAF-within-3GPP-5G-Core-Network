@@ -1,0 +1,192 @@
+# SPDX-License-Identifier: MIT
+
+nameOverride: ""
+
+image:
+  repository: local/oai-ids
+  tag: dev
+  pullPolicy: Never
+
+imagePullSecrets: []
+
+sharedStorage:
+  enabled: true
+  mountPath: /oai-5g-storage
+  existingClaim: ""
+  hostPath: /oai-5g-host-storage
+  hostPathType: DirectoryOrCreate
+
+serviceAccount:
+  create: true
+  annotations: {}
+
+ids:
+  host: oai-ids
+  instanceId: oai-ids-dev
+  servingArea:
+    region: default
+    mcc: "001"
+    mnc: "01"
+    tac: "000001"
+  gtpu:
+    host: "0.0.0.0"
+    port: 2152
+  http:
+    host: "0.0.0.0"
+    port: 8080
+  classifier:
+    packet_mtu: 1500
+    seed: 1337
+    hidden_layers:
+      - 256
+      - 64
+    mode: heuristic
+    malicious_packet_size_threshold: 512
+    high_byte_ratio_threshold: 0.60
+  modelRegistry:
+    enabled: true
+    mode: placeholder
+    artifact_path: ""
+    registry_uri: ""
+    request_timeout_seconds: 3
+    model_version: placeholder-v1
+    architecture: deterministic-placeholder
+    artifact_type: placeholder
+    source_nf: LOCAL
+    source_nf_instance_id: oai-ids-placeholder
+    source_uri: ""
+    checksum: ""
+    sequence_size: 1
+    label_map:
+      0: benign
+      1: malicious
+  reports:
+    storage: memory
+    file_path: /tmp/oai-ids/reports.jsonl
+  datasetCapture:
+    enabled: false
+    level: report-only
+    storage_root: /oai-5g-storage
+    relative_path: IDS_RELATED_STORAGE/DATASETS
+    scenario_id: manual
+    traffic_class: unknown
+    attack_label: unknown
+    attack_variant: ""
+    generator: ""
+    generator_metadata: {}
+    include_raw_gtpu: false
+    include_inner_packet: false
+    sequence_size: 200
+    split: unspecified
+    numeric_label: -1
+    flush_every: 1
+  countermeasures:
+    mode: observe-only
+    active_enabled: false
+    smf_pdu_session_release_enabled: false
+    amf_ue_context_release_enabled: false
+    udm_service_restriction_enabled: false
+    pcf_policy_update_enabled: false
+    smf_base_uri: http://oai-smf:80
+    amf_base_uri: http://oai-amf:80
+    udm_base_uri: http://oai-udm:80
+    pcf_base_uri: http://oai-pcf:80
+  trafficInfluence:
+    enabled: false
+    mode: disabled
+    pcf_base_uri: http://oai-pcf:80/npcf-smpolicycontrol/v1
+    supi: imsi-001010000000001
+    pdu_session_id: 1
+    pdu_session_type: IPV4
+    dnn: oai
+    snssai_sst: 1
+    snssai_sd: ""
+    notification_uri: http://oai-ids:8080/nids-event-exposure/v1/notifications
+    request_timeout_seconds: 3
+    max_attempts: 3
+    retry_interval_seconds: 5.0
+    duplication_policy_id: ids-duplication
+    duplication_teid: 1
+  nwdafIntegration:
+    enabled: false
+    mode: disabled
+    base_uri: http://oai-nwdaf-mtlf-service:8082/nnwdaf-mlmodelprovision/v1
+    notification_uri: http://oai-ids:8080/nids-model-management/v1/model-notifications
+    fetch_model_metadata: false
+    report_forwarding_enabled: false
+    report_forwarding_uri: http://oai-nwdaf-dccf:8081/ndccf-datamanagement/v1/ids-reports
+    notif_correlation_id: oai-ids-model-updates
+    ml_event: ABNORMAL_BEHAVIOUR
+    supported_features: "0"
+    expiry: ""
+    request_timeout_seconds: 3
+    max_attempts: 3
+    retry_interval_seconds: 5.0
+  nrf:
+    base_uri: http://oai-nrf:80/nnrf-nfm/v1
+    nf_instance_id: 11111111-1111-4111-8111-111111111111
+    nf_type: AF
+    nf_status: REGISTERED
+    heart_beat_timer: 30
+    service_name: oai-ids-monitoring
+    service_version: v1
+
+regions: []
+
+compatibilityService:
+  enabled: true
+  primaryRegion: region-paris
+
+service:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: gtpu
+      port: 2152
+      targetPort: gtpu
+      protocol: UDP
+
+deploymentStrategy:
+  type: Recreate
+
+containerPorts:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+  - name: gtpu
+    containerPort: 2152
+    protocol: UDP
+
+waitForNrf:
+  enabled: true
+  host: oai-nrf
+  port: 80
+
+podSecurityContext: {}
+securityContext: {}
+
+resources: {}
+
+readinessProbe:
+  enabled: true
+  port: http
+  path: /readyz
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+livenessProbe:
+  enabled: true
+  port: http
+  path: /healthz
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+dev:
+  rolloutNonce: "0"

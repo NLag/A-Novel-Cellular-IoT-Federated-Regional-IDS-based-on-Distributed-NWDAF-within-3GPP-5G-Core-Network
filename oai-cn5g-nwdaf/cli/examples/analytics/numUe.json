@@ -1,0 +1,12 @@
+{
+  "event-id": "NETWORK_PERFORMANCE",
+  "ana-req": {
+    "startTs": "2025-10-28T11:30:00.000Z",
+    "endTs": "2026-10-22T21:59:59.000Z"
+  },
+  "event-filter": {
+    "nwPerfTypes": ["NUM_OF_UE"]
+  },
+  "supported-features": {},
+  "tgt-ue": {}
+}

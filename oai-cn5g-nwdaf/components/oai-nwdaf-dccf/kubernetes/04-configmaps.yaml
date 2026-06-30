@@ -1,0 +1,125 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: casmella-controller-config
+  namespace: oai-tutorial
+data:
+  controller-config.yaml: |
+    cluster_name: newS
+    monitor_https: false
+    excluded_interfaces: []
+    prom_port: 9950
+    watchers:
+      - name: OAI_Core_Watcher
+        namespace: oai-tutorial
+        label_selector: 'app.kubernetes.io/instance=oai-5g-basic'
+      - name: NWDAF_Watcher
+        namespace: oai-tutorial
+        label_selector: 'project=oai-tutorial'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: casmella-agent-config
+  namespace: oai-tutorial
+data:
+  agent-config.yaml: |
+    use_ring_buffers: true
+    use_xdp: true
+    monitor_https: false
+    debug_events: false
+    debug_operation_time_streams: false
+    excluded_interfaces:
+      - "lo"
+      - "docker0"
+    n6_interface_names: []
+    prom_port: 9950
+    ignore_sent_requests_and_received_responses:
+      http2: true
+      ngap: false
+      pfcp: true
+    # Database Configuration
+    database:
+      enabled: true
+      path: /data/casmella.db
+      retention_hours: 24
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openapi-operations
+  namespace: oai-tutorial
+data:
+  openapi-operations.yaml: |
+    # 5G OpenAPI operations mapping
+    /namf-comm/v1/ue-contexts/[^/]*/n1-n2-messages:
+      post: N1N2MessageTransfer
+    /nsmf-pdusession/v1/sm-contexts:
+      post: PostSmContexts
+    /nnrf-nfm/v1/nf-instances/[^/]*:
+      put: RegisterNFInstance
+      patch: UpdateNFInstance
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dccf-config
+  namespace: oai-tutorial
+data:
+  dccf-config.yaml: |
+    nwdaf:
+      nfInstanceId: "nwdaf-dccf-001"
+      nfType: "NWDAF"
+      ipv4Address: "oai-nwdaf-dccf.oai-tutorial.svc.cluster.local"
+      nfServices:
+        - serviceInstanceId: "ndccf-001"
+          serviceName: "ndccf-datamanagement"
+          versions:
+            - apiVersionInUri: "v1"
+              apiFullVersion: "1.0.0"
+          scheme: "http"
+          ipEndPoints:
+            - ipv4Address: "oai-nwdaf-dccf.oai-tutorial.svc.cluster.local"
+              port: 8081
+
+    nrf:
+      endpoint: "http://oai-nrf.oai-tutorial.svc.cluster.local:80"
+      auto_register: true
+      heartbeat_interval: 30
+
+    ndccf:
+      port: 8081
+      api_version: "v1"
+      data_retention_seconds: 3600
+      database_path: "/data/casmella.db"
+
+    # DCCF callback URI for receiving notifications
+    dccf:
+      callback_uri: "http://oai-nwdaf-dccf.oai-tutorial.svc.cluster.local:8081"
+
+    # AMF endpoint for event subscriptions
+    amf:
+      endpoint: "http://oai-amf.oai-tutorial.svc.cluster.local:80"
+      enabled: true  # OAI AMF supports Namf_EventExposure - now using correct payload format
+
+    # SMF endpoint for event subscriptions
+    smf:
+      endpoint: "http://oai-smf.oai-tutorial.svc.cluster.local:80"
+      enabled: true
+
+    # NF Event Subscriptions
+    nf_subscriptions:
+      enabled: true  # Set to true to subscribe to AMF/SMF events
+      use_http2: true  # Use HTTP/2 for NF subscriptions (required for OAI AMF/SMF)
+
+    # Kubernetes pod monitoring
+    kubernetes:
+      namespace: "oai-tutorial"
+      monitor_pods:
+        - name_pattern: "oai-amf"
+          protocols: ["http2", "ngap"]
+        - name_pattern: "oai-smf"
+          protocols: ["http2", "pfcp"]
+        - name_pattern: "oai-upf"
+          protocols: ["gtpu", "pfcp"]

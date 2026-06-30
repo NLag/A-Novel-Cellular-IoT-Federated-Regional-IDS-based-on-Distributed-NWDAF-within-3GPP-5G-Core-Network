@@ -1,0 +1,87 @@
+# Prometheus Scrape Configuration for eBPF Agent
+# Add this to your Prometheus configuration if not using Prometheus Operator
+
+scrape_configs:
+  # eBPF Agent Metrics (DaemonSet pods)
+  - job_name: 'oai-ebpf-agent'
+    honor_labels: true
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - oai-tutorial
+    
+    relabel_configs:
+      # Only scrape pods with app=ebpf-agent label
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: ebpf-agent
+      
+      # Only scrape ready pods
+      - source_labels: [__meta_kubernetes_pod_ready]
+        action: keep
+        regex: true
+      
+      # Set address to pod IP:9950
+      - source_labels: [__meta_kubernetes_pod_ip]
+        action: replace
+        target_label: __address__
+        replacement: ${1}:9950
+      
+      # Add pod name as label
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+      
+      # Add namespace as label
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+      
+      # Add node name as label
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: node
+      
+      # Add pod labels as metrics labels
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+    
+    scrape_interval: 1s
+    scrape_timeout: 1s
+    metrics_path: /metrics
+
+  # Alternative: Scrape via Service endpoint
+  - job_name: 'oai-ebpf-agent-service'
+    honor_labels: true
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - oai-tutorial
+    
+    relabel_configs:
+      # Only scrape the ebpf-agent-metrics service
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: ebpf-agent-metrics
+      
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: metrics
+      
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+      
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+      
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: node
+    
+    scrape_interval: 1s
+    scrape_timeout: 1s
+    metrics_path: /metrics

@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT
+
+{{- if .Values.packetRusher.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.packetRusher.amfNgap.serviceName }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.packetRusher.amfNgap.serviceName }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  type: {{ .Values.packetRusher.amfNgap.service.type }}
+  selector:
+    app.kubernetes.io/name: oai-amf
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: ngap
+      protocol: SCTP
+      port: {{ .Values.packetRusher.amfNgap.service.port }}
+      targetPort: {{ .Values.packetRusher.amfNgap.service.targetPort }}
+      {{- if eq .Values.packetRusher.amfNgap.service.type "NodePort" }}
+      nodePort: {{ .Values.packetRusher.amfNgap.service.nodePort }}
+      {{- end }}
+{{- end }}

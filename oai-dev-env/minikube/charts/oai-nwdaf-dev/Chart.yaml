@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+
+apiVersion: v2
+name: oai-nwdaf-dev
+description: Developer-focused Helm chart for OAI NWDAF on minikube
+type: application
+version: 0.1.0
+appVersion: dev
+
+keywords:
+  - NWDAF
+  - Analytics
+  - OAI
+  - 5GC
+
+maintainers:
+  - name: OPENAIRINTERFACE
+    email: oaicicdteam@openairinterface.org

@@ -1,0 +1,322 @@
+---
+# Minimal eBPF Monitoring Deployment for OAI 5G Core
+# This deploys only the eBPF agent with Prometheus metrics export
+# No DCCF controller, no NRF registration, just eBPF monitoring
+
+# Namespace (if not already created)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oai-tutorial
+  labels:
+    name: oai-tutorial
+
+---
+# ServiceAccount for eBPF Agent
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ebpf-agent
+  namespace: oai-tutorial
+
+---
+# ClusterRole for minimal agent permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ebpf-agent-role
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]
+
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ebpf-agent-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ebpf-agent-role
+subjects:
+  - kind: ServiceAccount
+    name: ebpf-agent
+    namespace: oai-tutorial
+
+---
+# ConfigMap for Agent Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ebpf-agent-config
+  namespace: oai-tutorial
+data:
+  agent-config.yaml: |
+    # eBPF Configuration
+    use_ring_buffers: true
+    use_xdp: true
+    monitor_https: false
+    
+    # Network Interfaces
+    excluded_interfaces:
+      - "lo"
+      - "docker0"
+      - "cni0"
+    
+    n6_interface_names: []
+    
+    # Prometheus Metrics
+    prom_port: 9950
+    
+    # Protocol Settings - Only monitor received requests for efficiency
+    ignore_sent_requests_and_received_responses:
+      http2: true   # Only monitor received requests (NF→NF)
+      ngap: false   # Monitor all NGAP (gNB↔AMF)
+      pfcp: true    # Only monitor received requests (SMF↔UPF)
+    
+    # Debug - disable for production
+    debug_events: false
+    debug_operation_time_streams: false
+    
+    # Database - disable if not needed, or enable for local storage
+    database:
+      enabled: false
+      path: /data/casmella.db
+      retention_hours: 24
+
+---
+# ConfigMap for OpenAPI Operations Mapping
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openapi-operations
+  namespace: oai-tutorial
+data:
+  openapi-operations.yaml: |
+    # 5G Core Network Functions OpenAPI Operations
+    # AMF - N1/N2 Interface
+    /namf-comm/v1/ue-contexts/[^/]*/n1-n2-messages:
+      post: N1N2MessageTransfer
+    /namf-comm/v1/ue-contexts/[^/]*/release:
+      post: UEContextRelease
+    /namf-evts/v1/subscriptions:
+      post: AMFEventSubscribe
+    
+    # SMF - PDU Session Management
+    /nsmf-pdusession/v1/sm-contexts:
+      post: PostSmContexts
+    /nsmf-pdusession/v1/sm-contexts/[^/]*:
+      post: SendMoData
+      delete: DeleteSmContext
+    /nsmf-pdusession/v1/sm-contexts/[^/]*/modify:
+      post: UpdateSmContext
+    /nsmf-pdusession/v1/sm-contexts/[^/]*/release:
+      post: ReleaseSmContext
+    
+    # NRF - NF Management
+    /nnrf-nfm/v1/nf-instances:
+      get: SearchNFInstances
+    /nnrf-nfm/v1/nf-instances/[^/]*:
+      get: GetNFInstance
+      put: RegisterNFInstance
+      patch: UpdateNFInstance
+      delete: DeregisterNFInstance
+    
+    # UDM - Subscriber Data Management
+    /nudm-sdm/v2/[^/]*/am-data:
+      get: GetAmData
+    /nudm-sdm/v2/[^/]*/sm-data:
+      get: GetSmData
+    /nudm-sdm/v2/[^/]*/smf-select-data:
+      get: GetSmfSelectData
+    
+    # AUSF - Authentication
+    /nausf-auth/v1/ue-authentications:
+      post: UEAuthenticationRequest
+    /nausf-auth/v1/ue-authentications/[^/]*/5g-aka-confirmation:
+      put: ConfirmAuth
+
+---
+# DaemonSet - eBPF Monitoring Agent
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ebpf-agent
+  namespace: oai-tutorial
+  labels:
+    app: ebpf-agent
+    component: monitoring
+    project: oai-tutorial
+spec:
+  selector:
+    matchLabels:
+      app: ebpf-agent
+  template:
+    metadata:
+      labels:
+        app: ebpf-agent
+        component: monitoring
+        project: oai-tutorial
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9950"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ebpf-agent
+      hostNetwork: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      
+      containers:
+        - name: ebpf-agent
+          # Use the DCCF image which contains the Casmella eBPF agent
+          image: oai-nwdaf-dccf:latest
+          imagePullPolicy: IfNotPresent
+          
+          # Required for eBPF operations
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - NET_ADMIN
+                - BPF
+                - PERFMON
+                - SYS_RESOURCE
+          
+          ports:
+            - name: metrics
+              containerPort: 9950
+              protocol: TCP
+          
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          
+          volumeMounts:
+            # eBPF required mounts
+            - name: sys-bpf
+              mountPath: /sys/fs/bpf
+            - name: sys-kernel-debug
+              mountPath: /sys/kernel/debug
+            - name: lib-modules
+              mountPath: /lib/modules
+              readOnly: true
+            - name: usr-src
+              mountPath: /usr/src
+              readOnly: true
+            
+            # Configuration files
+            - name: agent-config
+              mountPath: /config/agent-config.yaml
+              subPath: agent-config.yaml
+              readOnly: true
+            - name: openapi-operations
+              mountPath: /config/openapi-operations.yaml
+              subPath: openapi-operations.yaml
+              readOnly: true
+          
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          
+          # Health check on metrics port
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 9950
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9950
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+      
+      volumes:
+        # eBPF filesystem access
+        - name: sys-bpf
+          hostPath:
+            path: /sys/fs/bpf
+            type: DirectoryOrCreate
+        - name: sys-kernel-debug
+          hostPath:
+            path: /sys/kernel/debug
+            type: Directory
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+            type: Directory
+        - name: usr-src
+          hostPath:
+            path: /usr/src
+            type: Directory
+        
+        # Configuration
+        - name: agent-config
+          configMap:
+            name: ebpf-agent-config
+        - name: openapi-operations
+          configMap:
+            name: openapi-operations
+
+---
+# Service for Metrics
+apiVersion: v1
+kind: Service
+metadata:
+  name: ebpf-agent-metrics
+  namespace: oai-tutorial
+  labels:
+    app: ebpf-agent
+    component: monitoring
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 9950
+      targetPort: 9950
+      protocol: TCP
+  selector:
+    app: ebpf-agent
+
+---
+# PodMonitor for Prometheus Operator
+# Use this if you have Prometheus Operator installed
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ebpf-agent-monitor
+  namespace: oai-tutorial
+  labels:
+    app: ebpf-agent
+    release: prometheus  # Change this to match your Prometheus release name
+spec:
+  selector:
+    matchLabels:
+      app: ebpf-agent
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 15s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - oai-tutorial

@@ -1,0 +1,24 @@
+---
+# PersistentVolumeClaim for DCCF database storage
+# This PVC is shared between Casmella agent (writes) and DCCF service (reads)
+#
+# NOTE: For production multi-node clusters, use a storage class that supports
+# ReadWriteMany (RWX) access mode, such as NFS, GlusterFS, or CephFS.
+# For single-node clusters (minikube), ReadWriteOnce works fine.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dccf-database-pvc
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+    project: oai-tutorial
+spec:
+  accessModes:
+    - ReadWriteOnce  # Change to ReadWriteMany for multi-node clusters
+  resources:
+    requests:
+      storage: 1Gi
+  # For minikube, this uses the standard storage class
+  # For production, specify an appropriate storage class that supports RWX
+  # storageClassName: nfs-client

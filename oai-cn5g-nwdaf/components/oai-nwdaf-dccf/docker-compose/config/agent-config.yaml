@@ -1,0 +1,30 @@
+# eBPF Configuration
+use_ring_buffers: false  # Use perf buffers for better compatibility
+use_xdp: false  # Disable XDP
+monitor_https: false
+
+# Network Interfaces
+excluded_interfaces:
+  - "lo"
+  - "docker0"
+
+n6_interface_names: []
+
+# Prometheus Metrics
+prom_port: 9950
+
+# Protocol Settings
+ignore_sent_requests_and_received_responses:
+  http2: true   # Only monitor received requests
+  ngap: false   # Monitor all NGAP
+  pfcp: true    # Only monitor received requests
+
+# Debug (set to true for troubleshooting)
+debug_events: false
+debug_operation_time_streams: false
+
+# Database Configuration
+database:
+  enabled: true
+  path: /data/casmella.db
+  retention_hours: 24

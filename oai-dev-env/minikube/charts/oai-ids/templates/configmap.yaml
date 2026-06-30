@@ -1,0 +1,27 @@
+{{- if .Values.regions }}
+{{- $root := . -}}
+{{- range $region := .Values.regions }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "oai-ids.regionConfigName" (dict "root" $root "region" $region) }}
+  labels:
+    {{- include "oai-ids.regionLabels" (dict "root" $root "region" $region) | nindent 4 }}
+data:
+  ids.yaml: |
+    ids:
+{{ include "oai-ids.regionIdsConfig" (dict "root" $root "region" $region) | indent 6 }}
+{{- end }}
+{{- else }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "oai-ids.name" . }}-config
+  labels:
+    {{- include "oai-ids.labels" . | nindent 4 }}
+data:
+  ids.yaml: |
+    ids:
+{{ toYaml .Values.ids | indent 6 }}
+{{- end }}

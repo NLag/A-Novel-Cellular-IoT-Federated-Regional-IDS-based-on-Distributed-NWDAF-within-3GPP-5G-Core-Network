@@ -1,0 +1,852 @@
+{{- $suffix := default "" .Values.global.nameSuffix }}
+{{- $databaseName := printf "oai-nwdaf-database%s" $suffix }}
+{{- $gatewayName := printf "oai-nwdaf-nbi-gateway%s" $suffix }}
+{{- $kongConfigName := printf "kong-config%s" $suffix }}
+{{- $engineName := printf "oai-nwdaf-engine%s" $suffix }}
+{{- $nbiAnalyticsName := printf "oai-nwdaf-nbi-analytics%s" $suffix }}
+{{- $nbiEventsName := printf "oai-nwdaf-nbi-events%s" $suffix }}
+{{- $nbiMlName := printf "oai-nwdaf-nbi-ml%s" $suffix }}
+{{- $sbiName := printf "oai-nwdaf-sbi%s" $suffix }}
+{{- $mtlfName := printf "oai-nwdaf-mtlf%s" $suffix }}
+{{- $dccfName := printf "oai-nwdaf-dccf%s" $suffix }}
+{{- $mtlfServiceName := default (printf "oai-nwdaf-mtlf-service%s" $suffix) .Values.mtlf.service.name }}
+{{- $dccfServiceName := default $dccfName .Values.dccf.service.name }}
+{{- $mtlfConfigName := printf "oai-nwdaf-mtlf-config%s" $suffix }}
+{{- $dccfConfigName := printf "oai-nwdaf-dccf-config%s" $suffix }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $databaseName }}
+  labels:
+    app: {{ $databaseName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $databaseName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $databaseName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.database.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-database
+          image: "{{ .Values.database.image.repository }}:{{ .Values.database.image.tag }}"
+          imagePullPolicy: {{ .Values.database.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.database.port }}
+          env:
+            - name: PGID
+              value: "1000"
+            - name: PUID
+              value: "1000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $databaseName }}
+  labels:
+    app: {{ $databaseName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $databaseName }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.database.port }}
+      targetPort: {{ .Values.database.port }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $kongConfigName }}
+  labels:
+    app: {{ $gatewayName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+data:
+  kong.yml: |
+    _format_version: '1.1'
+    _transform: true
+
+    services:
+    - name: {{ $nbiAnalyticsName }}
+      url: http://{{ $nbiAnalyticsName }}:{{ .Values.nbiAnalytics.port }}/nnwdaf-analyticsinfo/v1/analytics
+      routes:
+        - name: oai-nwdaf-nbi-analytics-route
+          hosts:
+          - {{ .Values.gateway.host }}
+          paths:
+          - /nnwdaf-analyticsinfo/v1/analytics
+
+    - name: {{ $nbiEventsName }}
+      url: http://{{ $nbiEventsName }}:{{ .Values.nbiEvents.port }}/nnwdaf-eventssubscription/v1
+      routes:
+        - name: oai-nwdaf-nbi-events-route
+          hosts:
+          - {{ .Values.gateway.host }}
+          paths:
+          - /nnwdaf-eventssubscription/v1
+
+    - name: {{ $nbiMlName }}
+      url: http://{{ $nbiMlName }}:{{ .Values.nbiMl.port }}/nnwdaf-mlmodelprovision/v1
+      routes:
+        - name: oai-nwdaf-nbi-ml-route
+          hosts:
+          - {{ .Values.gateway.host }}
+          paths:
+          - /nnwdaf-mlmodelprovision/v1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $gatewayName }}
+  labels:
+    app: {{ $gatewayName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $gatewayName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $gatewayName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.gateway.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-nbi-gateway
+          image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}"
+          imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+            - containerPort: 8443
+            - containerPort: 8001
+          env:
+            - name: KONG_ADMIN_LISTEN
+              value: 0.0.0.0:8001
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: /kong/declarative/kong.yml
+            - name: KONG_PROXY_LISTEN
+              value: 0.0.0.0:8000
+            - name: KONG_PROXY_LISTEN_SSL
+              value: 0.0.0.0:8443
+          volumeMounts:
+            - name: kong-config
+              mountPath: /kong/declarative
+      volumes:
+        - name: kong-config
+          configMap:
+            name: {{ $kongConfigName }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $gatewayName }}
+  labels:
+    app: {{ $gatewayName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.gateway.service.type }}
+  selector:
+    app: {{ $gatewayName }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.gateway.service.httpPort }}
+      targetPort: 8000
+      {{- if eq .Values.gateway.service.type "NodePort" }}
+      nodePort: {{ .Values.gateway.service.nodePorts.http }}
+      {{- end }}
+    - name: https
+      protocol: TCP
+      port: {{ .Values.gateway.service.httpsPort }}
+      targetPort: 8443
+      {{- if eq .Values.gateway.service.type "NodePort" }}
+      nodePort: {{ .Values.gateway.service.nodePorts.https }}
+      {{- end }}
+    - name: admin
+      protocol: TCP
+      port: {{ .Values.gateway.service.adminPort }}
+      targetPort: 8001
+      {{- if eq .Values.gateway.service.type "NodePort" }}
+      nodePort: {{ .Values.gateway.service.nodePorts.admin }}
+      {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $engineName }}
+  labels:
+    app: {{ $engineName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $engineName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $engineName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.engine.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-engine
+          image: "{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}"
+          imagePullPolicy: {{ .Values.engine.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.engine.port }}
+          env:
+            - name: ENGINE_NUM_OF_UE_ROUTE
+              value: {{ .Values.engine.routes.numOfUe | quote }}
+            - name: ENGINE_SESS_SUCC_RATIO_ROUTE
+              value: {{ .Values.engine.routes.sessSuccRatio | quote }}
+            - name: ENGINE_UE_COMMUNICATION_ROUTE
+              value: {{ .Values.engine.routes.ueCommunication | quote }}
+            - name: ENGINE_UE_MOBILITY_ROUTE
+              value: {{ .Values.engine.routes.ueMobility | quote }}
+            - name: MONGODB_COLLECTION_NAME_AMF
+              value: {{ .Values.global.mongodb.collectionNameAmf | quote }}
+            - name: MONGODB_COLLECTION_NAME_SMF
+              value: {{ .Values.global.mongodb.collectionNameSmf | quote }}
+            - name: MONGODB_DATABASE_NAME
+              value: {{ .Values.global.mongodb.databaseName | quote }}
+            - name: MONGODB_URI
+              value: {{ .Values.global.mongodb.uri | quote }}
+            - name: SERVER_ADDR
+              value: {{ printf "0.0.0.0:%v" .Values.engine.port | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $engineName }}
+  labels:
+    app: {{ $engineName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $engineName }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.engine.port }}
+      targetPort: {{ .Values.engine.port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $nbiAnalyticsName }}
+  labels:
+    app: {{ $nbiAnalyticsName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $nbiAnalyticsName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $nbiAnalyticsName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.nbiAnalytics.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-nbi-analytics
+          image: "{{ .Values.nbiAnalytics.image.repository }}:{{ .Values.nbiAnalytics.image.tag }}"
+          imagePullPolicy: {{ .Values.nbiAnalytics.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.nbiAnalytics.port }}
+          env:
+            - name: ENGINE_NUM_OF_UE_ROUTE
+              value: {{ .Values.engine.routes.numOfUe | quote }}
+            - name: ENGINE_SESS_SUCC_RATIO_ROUTE
+              value: {{ .Values.engine.routes.sessSuccRatio | quote }}
+            - name: ENGINE_UE_COMMUNICATION_ROUTE
+              value: {{ .Values.engine.routes.ueCommunication | quote }}
+            - name: ENGINE_UE_MOBILITY_ROUTE
+              value: {{ .Values.engine.routes.ueMobility | quote }}
+            - name: ENGINE_URI
+              value: {{ printf "http://%s:%v" $engineName .Values.engine.port | quote }}
+            - name: SERVER_ADDR
+              value: {{ printf "0.0.0.0:%v" .Values.nbiAnalytics.port | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $nbiAnalyticsName }}
+  labels:
+    app: {{ $nbiAnalyticsName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $nbiAnalyticsName }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.nbiAnalytics.port }}
+      targetPort: {{ .Values.nbiAnalytics.port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $nbiEventsName }}
+  labels:
+    app: {{ $nbiEventsName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $nbiEventsName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $nbiEventsName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.nbiEvents.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-nbi-events
+          image: "{{ .Values.nbiEvents.image.repository }}:{{ .Values.nbiEvents.image.tag }}"
+          imagePullPolicy: {{ .Values.nbiEvents.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.nbiEvents.port }}
+          env:
+            - name: ENGINE_NUM_OF_UE_ROUTE
+              value: {{ .Values.engine.routes.numOfUe | quote }}
+            - name: ENGINE_SESS_SUCC_RATIO_ROUTE
+              value: {{ .Values.engine.routes.sessSuccRatio | quote }}
+            - name: ENGINE_UE_COMMUNICATION_ROUTE
+              value: {{ .Values.engine.routes.ueCommunication | quote }}
+            - name: ENGINE_UE_MOBILITY_ROUTE
+              value: {{ .Values.engine.routes.ueMobility | quote }}
+            - name: ENGINE_URI
+              value: {{ printf "http://%s:%v" $engineName .Values.engine.port | quote }}
+            - name: SERVER_ADDR
+              value: {{ printf "0.0.0.0:%v" .Values.nbiEvents.port | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $nbiEventsName }}
+  labels:
+    app: {{ $nbiEventsName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $nbiEventsName }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.nbiEvents.port }}
+      targetPort: {{ .Values.nbiEvents.port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $nbiMlName }}
+  labels:
+    app: {{ $nbiMlName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $nbiMlName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $nbiMlName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.nbiMl.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-nbi-ml
+          image: "{{ .Values.nbiMl.image.repository }}:{{ .Values.nbiMl.image.tag }}"
+          imagePullPolicy: {{ .Values.nbiMl.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.nbiMl.port }}
+          env:
+            - name: SERVER_ADDR
+              value: {{ printf "0.0.0.0:%v" .Values.nbiMl.port | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $nbiMlName }}
+  labels:
+    app: {{ $nbiMlName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $nbiMlName }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.nbiMl.port }}
+      targetPort: {{ .Values.nbiMl.port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $sbiName }}
+  labels:
+    app: {{ $sbiName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $sbiName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $sbiName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.sbi.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-sbi
+          image: "{{ .Values.sbi.image.repository }}:{{ .Values.sbi.image.tag }}"
+          imagePullPolicy: {{ .Values.sbi.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.sbi.port }}
+          env:
+            - name: AMF_API_ROUTE
+              value: {{ .Values.global.amf.apiRoute | quote }}
+            - name: AMF_IP_ADDR
+              value: {{ .Values.global.amf.url | quote }}
+            - name: AMF_HTTP_VERSION
+              value: {{ .Values.global.amf.httpVersion | quote }}
+            - name: AMF_NOTIFICATION_FORWARD_ROUTE
+              value: {{ .Values.global.amf.notificationForwardRoute | quote }}
+            - name: AMF_NOTIFICATION_ID
+              value: {{ .Values.global.amf.notificationId | quote }}
+            - name: AMF_NOTIFY_CORRELATION_ID
+              value: {{ .Values.global.amf.notifyCorrelationId | quote }}
+            - name: AMF_SUBSCR_ROUTE
+              value: {{ .Values.global.amf.subscriptionRoute | quote }}
+            - name: SMF_API_ROUTE
+              value: {{ .Values.global.smf.apiRoute | quote }}
+            - name: SMF_IP_ADDR
+              value: {{ .Values.global.smf.url | quote }}
+            - name: SMF_HTTP_VERSION
+              value: {{ .Values.global.smf.httpVersion | quote }}
+            - name: SMF_NOTIFICATION_FORWARD_ROUTE
+              value: {{ .Values.global.smf.notificationForwardRoute | quote }}
+            - name: SMF_NOTIFICATION_ID
+              value: {{ .Values.global.smf.notificationId | quote }}
+            - name: SMF_NOTIFY_CORRELATION_ID
+              value: {{ .Values.global.smf.notifyCorrelationId | quote }}
+            - name: SMF_SUBSCR_ROUTE
+              value: {{ .Values.global.smf.subscriptionRoute | quote }}
+            - name: MONGODB_COLLECTION_NAME_AMF
+              value: {{ .Values.global.mongodb.collectionNameAmf | quote }}
+            - name: MONGODB_COLLECTION_NAME_SMF
+              value: {{ .Values.global.mongodb.collectionNameSmf | quote }}
+            - name: MONGODB_DATABASE_NAME
+              value: {{ .Values.global.mongodb.databaseName | quote }}
+            - name: MONGODB_URI
+              value: {{ .Values.global.mongodb.uri | quote }}
+            - name: EVENT_NOTIFY_URI
+              value: {{ .Values.global.sbi.eventNotifyUri | quote }}
+            - name: SERVER_ADDR
+              value: {{ printf "0.0.0.0:%v" .Values.sbi.port | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $sbiName }}
+  labels:
+    app: {{ $sbiName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $sbiName }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.sbi.port }}
+      targetPort: {{ .Values.sbi.port }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $mtlfConfigName }}
+  labels:
+    app: {{ $mtlfName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+data:
+  mtlf-config.yaml: |
+    mtlf:
+      nfInstanceId: {{ .Values.mtlf.nf.instanceId | quote }}
+      nfType: "NWDAF"
+      ipv4Address: ""
+      nfServices:
+        - serviceInstanceId: "nnwdaf-mlmodelprovision-001"
+          serviceName: "nnwdaf-mlmodelprovision"
+          versions:
+            - apiVersionInUri: "v1"
+              apiFullVersion: "1.0.0"
+          scheme: "http"
+          ipEndPoints:
+            - ipv4Address: ""
+              port: {{ .Values.mtlf.port }}
+    serving_area:
+      region: {{ .Values.global.region | quote }}
+      tac: {{ .Values.global.tac | quote }}
+    nrf:
+      endpoint: {{ .Values.global.nrf.url | quote }}
+      auto_register: {{ .Values.mtlf.nrf.autoRegister }}
+      heartbeat_interval: {{ .Values.mtlf.nrf.heartbeatInterval }}
+    server:
+      port: {{ .Values.mtlf.port }}
+      api_version: "v1"
+    dccf:
+      endpoint: {{ printf "http://%s:%v" $dccfServiceName .Values.dccf.port | quote }}
+      notification_uri: {{ printf "http://%s:%v/mtlf-internal/dccf-notifications" $mtlfServiceName .Values.mtlf.port | quote }}
+      event_types:
+{{- range .Values.mtlf.dccf.eventTypes }}
+        - {{ . | quote }}
+{{- end }}
+      protocols:
+{{- range .Values.mtlf.dccf.protocols }}
+        - {{ . | quote }}
+{{- end }}
+      notification_interval: {{ .Values.mtlf.dccf.notificationInterval }}
+    training:
+      script_path: {{ .Values.mtlf.training.scriptPath | quote }}
+      models_dir: {{ .Values.mtlf.training.modelsDir | quote }}
+      default_epochs: {{ .Values.mtlf.training.defaultEpochs }}
+      python_bin: {{ .Values.mtlf.training.pythonBin | quote }}
+      pass_output_dir_args: {{ .Values.mtlf.training.passOutputDirArgs }}
+      working_dir: {{ .Values.mtlf.training.workingDir | quote }}
+      research_workspace: {{ .Values.mtlf.training.researchWorkspace | quote }}
+      normalized_package: {{ .Values.mtlf.training.normalizedPackage | quote }}
+    training_scenario:
+      scenario: {{ .Values.mtlf.trainingScenario.scenario | quote }}
+      model_architecture: {{ .Values.mtlf.trainingScenario.modelArchitecture | quote }}
+      model_architectures:
+{{- range $name, $params := .Values.mtlf.trainingScenario.modelArchitectures }}
+        {{ $name }}:
+{{- if $params }}
+{{ toYaml $params | nindent 10 }}
+{{- else }}
+          {}
+{{- end }}
+{{- end }}
+      working_dir: {{ .Values.mtlf.trainingScenario.workingDir | quote }}
+      research_workspace: {{ .Values.mtlf.trainingScenario.researchWorkspace | quote }}
+      normalized_package: {{ .Values.mtlf.trainingScenario.normalizedPackage | quote }}
+      pass_output_dir_args: {{ .Values.mtlf.trainingScenario.passOutputDirArgs }}
+      record_outputs: {{ .Values.mtlf.trainingScenario.recordOutputs }}
+      max_recorded_files: {{ .Values.mtlf.trainingScenario.maxRecordedFiles }}
+      metadata_exclude_dirs:
+{{- range .Values.mtlf.trainingScenario.metadataExcludeDirs }}
+        - {{ . | quote }}
+{{- end }}
+      scripts:
+{{- range $name, $path := .Values.mtlf.trainingScenario.scripts }}
+        {{ $name }}: {{ $path | quote }}
+{{- end }}
+    shared_storage:
+      root: {{ .Values.global.sharedStorage.mountPath | quote }}
+      metadata_enabled: true
+    mongodb:
+      enabled: true
+      uri: {{ .Values.global.mongodb.uri | quote }}
+      database_name: {{ .Values.global.mongodb.databaseName | quote }}
+      storage_metadata_collection: {{ .Values.global.mongodb.collectionNameStorageMetadata | quote }}
+      timeout_ms: 3000
+    test_stub_model:
+      enabled: {{ .Values.mtlf.testStubModel.enabled }}
+      model_id: {{ .Values.mtlf.testStubModel.modelId | quote }}
+      job_id: {{ .Values.mtlf.testStubModel.jobId | quote }}
+      weight_bytes: {{ .Values.mtlf.testStubModel.weightBytes }}
+      notify_existing_on_subscribe: {{ .Values.mtlf.testStubModel.notifyExistingOnSubscribe }}
+    callback_uri: {{ printf "http://%s:%v" $mtlfServiceName .Values.mtlf.port | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $dccfConfigName }}
+  labels:
+    app: {{ $dccfName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+data:
+  dccf-config.yaml: |
+    nwdaf:
+      nfInstanceId: {{ .Values.dccf.nf.instanceId | quote }}
+      nfType: "NWDAF"
+      ipv4Address: ""
+      nfServices:
+        - serviceInstanceId: "ndccf-datamanagement-001"
+          serviceName: "ndccf-datamanagement"
+          versions:
+            - apiVersionInUri: "v1"
+              apiFullVersion: "1.0.0"
+          scheme: "http"
+          ipEndPoints:
+            - ipv4Address: ""
+              port: {{ .Values.dccf.port }}
+    serving_area:
+      region: {{ .Values.global.region | quote }}
+      tac: {{ .Values.global.tac | quote }}
+    nrf:
+      endpoint: {{ .Values.global.nrf.url | quote }}
+      auto_register: {{ .Values.dccf.nrf.autoRegister }}
+      heartbeat_interval: {{ .Values.dccf.nrf.heartbeatInterval }}
+    ndccf:
+      port: {{ .Values.dccf.port }}
+      database_path: "/data/casmella.db"
+    mongodb:
+      enabled: true
+      uri: {{ .Values.global.mongodb.uri | quote }}
+      database_name: {{ .Values.global.mongodb.databaseName | quote }}
+      ids_reports_collection: {{ .Values.global.mongodb.collectionNameIdsReports | quote }}
+      timeout_ms: 3000
+    dccf:
+      callback_uri: {{ printf "http://%s:%v" $dccfServiceName .Values.dccf.port | quote }}
+    nf_subscriptions:
+      enabled: {{ .Values.dccf.nfSubscriptions.enabled }}
+      use_http2: {{ .Values.dccf.nfSubscriptions.useHttp2 }}
+      amf:
+        enabled: {{ .Values.dccf.nfSubscriptions.amfEnabled }}
+        endpoint: {{ .Values.global.amf.url | quote }}
+      smf:
+        enabled: {{ .Values.dccf.nfSubscriptions.smfEnabled }}
+        endpoint: {{ .Values.global.smf.url | quote }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $mtlfName }}
+  labels:
+    app: {{ $mtlfName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $mtlfName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $mtlfName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.mtlf.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-mtlf
+          image: "{{ .Values.mtlf.image.repository }}:{{ .Values.mtlf.image.tag }}"
+          imagePullPolicy: {{ .Values.mtlf.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.mtlf.port }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: MTLF_PORT
+              value: {{ .Values.mtlf.port | quote }}
+          volumeMounts:
+            - name: mtlf-config
+              mountPath: /config/mtlf-config.yaml
+              subPath: mtlf-config.yaml
+              readOnly: true
+            - name: mtlf-models
+              mountPath: /models
+            - name: mtlf-workspace
+              mountPath: /workspace
+            {{- include "oai-nwdaf-dev.sharedStorageMount" . | nindent 12 }}
+            {{- if .Values.mtlf.storage.trainingCode.existingClaim }}
+            - name: mtlf-training-code
+              mountPath: {{ .Values.mtlf.storage.trainingCode.mountPath | quote }}
+              readOnly: true
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.mtlf.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: {{ .Values.mtlf.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: mtlf-config
+          configMap:
+            name: {{ $mtlfConfigName }}
+        - name: mtlf-models
+          {{- if .Values.mtlf.storage.models.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.mtlf.storage.models.existingClaim | quote }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: mtlf-workspace
+          {{- if .Values.mtlf.storage.workspace.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.mtlf.storage.workspace.existingClaim | quote }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- include "oai-nwdaf-dev.sharedStorageVolume" . | nindent 8 }}
+        {{- if .Values.mtlf.storage.trainingCode.existingClaim }}
+        - name: mtlf-training-code
+          persistentVolumeClaim:
+            claimName: {{ .Values.mtlf.storage.trainingCode.existingClaim | quote }}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $mtlfServiceName }}
+  labels:
+    app: {{ $mtlfName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $mtlfName }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.mtlf.port }}
+      targetPort: {{ .Values.mtlf.port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $dccfName }}
+  labels:
+    app: {{ $dccfName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $dccfName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $dccfName }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        nwdaf.oai/region: {{ .Values.global.region | quote }}
+        nwdaf.oai/tac: {{ .Values.global.tac | quote }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ .Values.dccf.rolloutNonce | quote }}
+    spec:
+      {{- include "oai-nwdaf-dev.podImagePullSecrets" . | nindent 6 }}
+      containers:
+        - name: oai-nwdaf-dccf
+          image: "{{ .Values.dccf.image.repository }}:{{ .Values.dccf.image.tag }}"
+          imagePullPolicy: {{ .Values.dccf.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.dccf.port }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: DCCF_PORT
+              value: {{ .Values.dccf.port | quote }}
+          volumeMounts:
+            - name: dccf-config
+              mountPath: /config/dccf-config.yaml
+              subPath: dccf-config.yaml
+              readOnly: true
+            - name: dccf-data
+              mountPath: /data
+            {{- include "oai-nwdaf-dev.sharedStorageMount" . | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.dccf.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: {{ .Values.dccf.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: dccf-config
+          configMap:
+            name: {{ $dccfConfigName }}
+        - name: dccf-data
+          {{- if .Values.dccf.storage.data.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.dccf.storage.data.existingClaim | quote }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- include "oai-nwdaf-dev.sharedStorageVolume" . | nindent 8 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $dccfServiceName }}
+  labels:
+    app: {{ $dccfName }}
+    {{- include "oai-nwdaf-dev.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $dccfName }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.dccf.port }}
+      targetPort: {{ .Values.dccf.port }}

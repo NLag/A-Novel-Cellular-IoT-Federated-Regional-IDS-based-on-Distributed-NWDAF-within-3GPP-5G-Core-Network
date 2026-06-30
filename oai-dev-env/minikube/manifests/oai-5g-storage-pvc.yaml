@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: MIT
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oai-5g-storage
+  namespace: oai-5g-core
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi

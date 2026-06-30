@@ -1,0 +1,11 @@
+# Toolchain
+# Goland project folder
+.idea/
+# Visual Studio Code
+.vscode/
+
+# debug/
+*log
+*pcap
+packetrusher
+app

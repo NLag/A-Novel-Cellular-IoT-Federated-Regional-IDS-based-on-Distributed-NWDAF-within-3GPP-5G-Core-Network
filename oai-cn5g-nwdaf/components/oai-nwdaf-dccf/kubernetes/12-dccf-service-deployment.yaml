@@ -1,0 +1,123 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oai-nwdaf-dccf
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+    component: dccf
+    project: oai-tutorial
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oai-nwdaf-dccf
+      component: dccf
+  template:
+    metadata:
+      labels:
+        app: oai-nwdaf-dccf
+        component: dccf
+        project: oai-tutorial
+    spec:
+      serviceAccountName: casmella-agent
+
+      containers:
+        - name: dccf
+          image: oai-nwdaf-dccf:latest
+          imagePullPolicy: Never  # Use local image from minikube
+
+          ports:
+            - name: nadrf
+              containerPort: 8081
+              protocol: TCP
+
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: DCCF_PORT
+              value: "8081"
+
+          volumeMounts:
+            - name: dccf-config
+              mountPath: /config/dccf-config.yaml
+              subPath: dccf-config.yaml
+              readOnly: true
+            - name: database-storage
+              mountPath: /data
+              # DCCF service needs write access to store NF events
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+      volumes:
+        - name: dccf-config
+          configMap:
+            name: dccf-config
+        - name: database-storage
+          persistentVolumeClaim:
+            claimName: dccf-database-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-dccf
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+    component: dccf
+    project: oai-tutorial
+spec:
+  type: ClusterIP
+  ports:
+    - name: nadrf
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+  selector:
+    app: oai-nwdaf-dccf
+    component: dccf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-dccf-external
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+    component: dccf
+spec:
+  type: NodePort
+  ports:
+    - name: nadrf
+      port: 8081
+      targetPort: 8081
+      nodePort: 30082
+      protocol: TCP
+  selector:
+    app: oai-nwdaf-dccf
+    component: dccf

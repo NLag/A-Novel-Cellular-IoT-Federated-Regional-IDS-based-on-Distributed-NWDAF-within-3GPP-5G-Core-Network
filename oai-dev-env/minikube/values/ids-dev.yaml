@@ -1,0 +1,228 @@
+# SPDX-License-Identifier: MIT
+
+image:
+  repository: local/oai-ids
+  tag: dev
+  pullPolicy: Never
+
+ids:
+  host: oai-ids
+  instanceId: oai-ids-dev
+  servingArea:
+    region: lab
+    mcc: "001"
+    mnc: "01"
+    tac: "000001"
+  gtpu:
+    host: "0.0.0.0"
+    port: 2152
+  http:
+    host: "0.0.0.0"
+    port: 8080
+  classifier:
+    packet_mtu: 1500
+    seed: 1337
+    hidden_layers:
+      - 256
+      - 64
+    mode: heuristic
+    malicious_packet_size_threshold: 512
+    high_byte_ratio_threshold: 0.60
+  modelRegistry:
+    enabled: true
+    mode: local
+    artifact_path: "/oai-5g-storage/IDS_RELATED_STORAGE/MODEL/oai-fedavg-transformer-20260630/ids_model.json"
+    registry_uri: ""
+    request_timeout_seconds: 3
+    model_version: oai-fedavg-transformer-20260630
+    architecture: Transformer
+    artifact_type: pytorch-state-dict
+    source_nf: MTLF
+    source_nf_instance_id: oai-nwdaf-mtlf
+    source_uri: ""
+    checksum: ""
+    sequence_size: 256
+    label_map:
+      0: normal
+      1: coapdos
+      2: mqttflood
+      3: pingflood
+      4: portscan
+      5: tcpsyn
+  alerting:
+    enabled: true
+    window: 50
+    threshold: 10
+    clear_below: 3
+  reports:
+    storage: memory
+  datasetCapture:
+    enabled: true
+    level: model-ready
+    storage_root: /oai-5g-storage
+    relative_path: IDS_RELATED_STORAGE/DATASETS
+    scenario_id: oai-attack-20260630
+    traffic_class: attack
+    attack_label: per-region-one-attack
+    attack_variant: ""
+    generator: Attacker_Simulate
+    generator_metadata:
+      run_profile: one-attack-per-region
+      mapping: paris=coapdos,lyon=mqttflood,marseille=pingflood,toulouse=portscan,nice=tcpsyn
+    include_raw_gtpu: false
+    include_inner_packet: false
+    sequence_size: 200
+    split: train
+    numeric_label: 0
+    flush_every: 1
+  countermeasures:
+    mode: observe-only
+    active_enabled: false
+    smf_pdu_session_release_enabled: false
+    amf_ue_context_release_enabled: false
+    udm_service_restriction_enabled: false
+    pcf_policy_update_enabled: false
+    smf_base_uri: http://oai-smf:80
+    amf_base_uri: http://oai-amf:80
+    udm_base_uri: http://oai-udm:80
+    pcf_base_uri: http://oai-pcf:80
+  trafficInfluence:
+    enabled: true
+    mode: sm-policy-probe
+    pcf_base_uri: http://oai-pcf:80/npcf-smpolicycontrol/v1
+    supi: imsi-001010000000001
+    pdu_session_id: 1
+    pdu_session_type: IPV4
+    dnn: oai
+    snssai_sst: 1
+    snssai_sd: ""
+    notification_uri: http://oai-ids:8080/nids-event-exposure/v1/notifications
+    request_timeout_seconds: 3
+    max_attempts: 3
+    retry_interval_seconds: 5.0
+    duplication_policy_id: ids-duplication
+    duplication_teid: 1
+  nwdafIntegration:
+    enabled: true
+    mode: subscribe
+    base_uri: http://oai-nwdaf-mtlf-service:8082/nnwdaf-mlmodelprovision/v1
+    notification_uri: http://oai-ids:8080/nids-model-management/v1/model-notifications
+    fetch_model_metadata: true
+    report_forwarding_enabled: true
+    report_forwarding_uri: http://oai-nwdaf-dccf:8081/ndccf-datamanagement/v1/ids-reports
+    notif_correlation_id: oai-ids-model-updates
+    ml_event: ABNORMAL_BEHAVIOUR
+    supported_features: "0"
+    expiry: ""
+    request_timeout_seconds: 3
+    max_attempts: 3
+    retry_interval_seconds: 5.0
+  nrf:
+    base_uri: http://oai-nrf:80/nnrf-nfm/v1
+    nf_instance_id: 11111111-1111-4111-8111-111111111111
+    nf_type: AF
+    service_name: oai-ids-monitoring
+
+regions:
+  - name: region-paris
+    tac: "000001"
+    instanceId: oai-ids-region-paris
+    nrfInstanceId: 11111111-1111-4111-8111-111111111101
+    ids:
+      servingArea:
+        region: region-paris
+        mcc: "001"
+        mnc: "01"
+        tac: "000001"
+      modelRegistry:
+        model_version: region-paris-placeholder-v1
+        source_nf_instance_id: 22222222-2222-4222-8222-222222222201
+      trafficInfluence:
+        duplication_policy_id: ids-duplication-region-paris
+      nwdafIntegration:
+        base_uri: http://oai-nwdaf-mtlf-region-paris:8082/nnwdaf-mlmodelprovision/v1
+        report_forwarding_uri: http://oai-nwdaf-dccf-region-paris:8081/ndccf-datamanagement/v1/ids-reports
+        notif_correlation_id: oai-ids-region-paris-model-updates
+  - name: region-lyon
+    tac: "000002"
+    instanceId: oai-ids-region-lyon
+    nrfInstanceId: 11111111-1111-4111-8111-111111111102
+    ids:
+      servingArea:
+        region: region-lyon
+        mcc: "001"
+        mnc: "01"
+        tac: "000002"
+      modelRegistry:
+        model_version: region-lyon-placeholder-v1
+        source_nf_instance_id: 22222222-2222-4222-8222-222222222202
+      trafficInfluence:
+        duplication_policy_id: ids-duplication-region-lyon
+      nwdafIntegration:
+        base_uri: http://oai-nwdaf-mtlf-region-lyon:8082/nnwdaf-mlmodelprovision/v1
+        report_forwarding_uri: http://oai-nwdaf-dccf-region-lyon:8081/ndccf-datamanagement/v1/ids-reports
+        notif_correlation_id: oai-ids-region-lyon-model-updates
+  - name: region-marseille
+    tac: "000003"
+    instanceId: oai-ids-region-marseille
+    nrfInstanceId: 11111111-1111-4111-8111-111111111103
+    ids:
+      servingArea:
+        region: region-marseille
+        mcc: "001"
+        mnc: "01"
+        tac: "000003"
+      modelRegistry:
+        model_version: region-marseille-placeholder-v1
+        source_nf_instance_id: 22222222-2222-4222-8222-222222222203
+      trafficInfluence:
+        duplication_policy_id: ids-duplication-region-marseille
+      nwdafIntegration:
+        base_uri: http://oai-nwdaf-mtlf-region-marseille:8082/nnwdaf-mlmodelprovision/v1
+        report_forwarding_uri: http://oai-nwdaf-dccf-region-marseille:8081/ndccf-datamanagement/v1/ids-reports
+        notif_correlation_id: oai-ids-region-marseille-model-updates
+  - name: region-toulouse
+    tac: "000004"
+    instanceId: oai-ids-region-toulouse
+    nrfInstanceId: 11111111-1111-4111-8111-111111111104
+    ids:
+      servingArea:
+        region: region-toulouse
+        mcc: "001"
+        mnc: "01"
+        tac: "000004"
+      modelRegistry:
+        model_version: region-toulouse-placeholder-v1
+        source_nf_instance_id: 22222222-2222-4222-8222-222222222204
+      trafficInfluence:
+        duplication_policy_id: ids-duplication-region-toulouse
+      nwdafIntegration:
+        base_uri: http://oai-nwdaf-mtlf-region-toulouse:8082/nnwdaf-mlmodelprovision/v1
+        report_forwarding_uri: http://oai-nwdaf-dccf-region-toulouse:8081/ndccf-datamanagement/v1/ids-reports
+        notif_correlation_id: oai-ids-region-toulouse-model-updates
+  - name: region-nice
+    tac: "000005"
+    instanceId: oai-ids-region-nice
+    nrfInstanceId: 11111111-1111-4111-8111-111111111105
+    ids:
+      servingArea:
+        region: region-nice
+        mcc: "001"
+        mnc: "01"
+        tac: "000005"
+      modelRegistry:
+        model_version: region-nice-placeholder-v1
+        source_nf_instance_id: 22222222-2222-4222-8222-222222222205
+      trafficInfluence:
+        duplication_policy_id: ids-duplication-region-nice
+      nwdafIntegration:
+        base_uri: http://oai-nwdaf-mtlf-region-nice:8082/nnwdaf-mlmodelprovision/v1
+        report_forwarding_uri: http://oai-nwdaf-dccf-region-nice:8081/ndccf-datamanagement/v1/ids-reports
+        notif_correlation_id: oai-ids-region-nice-model-updates
+
+compatibilityService:
+  enabled: true
+  primaryRegion: region-paris
+
+dev:
+  rolloutNonce: "0"

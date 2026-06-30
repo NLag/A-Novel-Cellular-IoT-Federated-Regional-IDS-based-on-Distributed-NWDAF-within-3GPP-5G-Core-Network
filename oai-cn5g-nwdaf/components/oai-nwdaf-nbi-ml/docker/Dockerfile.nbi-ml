@@ -1,0 +1,83 @@
+#/*
+# * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+# * contributor license agreements.  See the NOTICE file distributed with
+# * this work for additional information regarding copyright ownership.
+# * The OpenAirInterface Software Alliance licenses this file to You under
+# * the OAI Public License, Version 1.1  (the "License"); you may not use this
+# * file except in compliance with the License. You may obtain a copy of the
+# * License at
+# *
+# *      http://www.openairinterface.org/?page_id=698
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+# *-------------------------------------------------------------------------------
+# * For more information about the OpenAirInterface (OAI) Software Alliance:
+# *      contact@openairinterface.org
+# */
+
+#/*
+# * Author: Abdelkader Mekrache <mekrache@eurecom.fr>
+# * Author: Karim Boutiba 	    <boutiba@eurecom.fr>
+# * Author: Arina Prostakova    <prostako@eurecom.fr>
+# * Description: Docker file of the oai-nwdaf-nbi-ml.
+# */
+
+ARG BUILD_IMAGE=golang:1.19-alpine
+
+#---------------------------------------------------------------------
+# BUILDER IMAGE
+#---------------------------------------------------------------------
+FROM $BUILD_IMAGE AS oai-nwdaf-nbi-ml-build
+WORKDIR /oai/nwdaf/nbi-ml
+ENV CGO_ENABLED=0
+COPY go.* ./
+RUN go mod download
+COPY . ./
+RUN go build -o bin/oai-nwdaf-nbi-ml cmd/oai-nwdaf-nbi-ml/main.go
+
+#---------------------------------------------------------------------
+# TARGET IMAGE
+# Uses nvidia/cuda base for GPU support + Python 3.11.
+# The Go binary is CGO_ENABLED=0 (statically linked) so it runs fine here.
+#---------------------------------------------------------------------
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04 AS oai-nwdaf-nbi-ml
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-dev \
+    python3-pip \
+    net-tools \
+    curl \
+    bash \
+    && ln -sf python3.11 /usr/bin/python3 \
+    && ln -sf python3 /usr/bin/python \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies for process_data_serial_chain.py (CUDA 12.1)
+RUN pip install --no-cache-dir \
+    torch==2.2.2 \
+    --index-url https://download.pytorch.org/whl/cu121
+
+RUN pip install --no-cache-dir \
+    torch_geometric==2.5.3
+
+RUN pip install --no-cache-dir \
+    "pandas>=2.0.0" \
+    "numpy>=1.24.0,<2.0.0" \
+    "scikit-learn>=1.3.0" \
+    "tqdm>=4.65.0"
+
+# Data processing script
+COPY process_data_serial_chain.py /app/process_data_serial_chain.py
+ENV MPLBACKEND=Agg
+
+# Go NBI-ML server (statically linked, no libc dependency)
+WORKDIR /
+COPY --from=oai-nwdaf-nbi-ml-build /oai/nwdaf/nbi-ml/bin/oai-nwdaf-nbi-ml ./
+COPY .env ./
+EXPOSE 8080/tcp
+ENTRYPOINT ["./oai-nwdaf-nbi-ml"]

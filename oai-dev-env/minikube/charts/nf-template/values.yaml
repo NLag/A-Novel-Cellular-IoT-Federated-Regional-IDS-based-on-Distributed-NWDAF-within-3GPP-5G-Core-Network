@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: MIT
+
+nameOverride: ""
+
+image:
+  repository: local/template-nf
+  tag: dev
+  pullPolicy: Never
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: true
+  annotations: {}
+
+service:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+
+containerPorts:
+  - name: http
+    containerPort: 8080
+    protocol: TCP
+
+config:
+  mountPath: /app/config
+  fileName: app.conf
+  contents: |
+    logLevel: info
+
+env: {}
+extraEnv: []
+command: []
+args: []
+
+waitForNrf:
+  enabled: false
+  host: oai-nrf
+  port: 80
+
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+
+securityContext: {}
+
+resources: {}
+
+readinessProbe:
+  enabled: false
+  port: http
+  path: /healthz
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+livenessProbe:
+  enabled: false
+  port: http
+  path: /healthz
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+dev:
+  rolloutNonce: "0"

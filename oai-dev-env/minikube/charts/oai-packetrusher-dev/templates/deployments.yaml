@@ -1,0 +1,115 @@
+{{/* SPDX-License-Identifier: MIT */}}
+{{- if and .Values.tunnel.enabled .Values.tunnel.vrf -}}
+{{- fail "oai-packetrusher-dev shared tunnel profile supports tunnel.vrf=false only; use tunnel.enabled=true,tunnel.vrf=false" -}}
+{{- end -}}
+{{- $root := . -}}
+{{- range $region := .Values.regions }}
+{{- $loop := $.Values.defaults.loop -}}
+{{- if hasKey $region "loop" -}}
+{{- $loop = $region.loop -}}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "oai-packetrusher-dev.regionName" (dict "root" $root "region" $region) }}
+  labels:
+    {{- include "oai-packetrusher-dev.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: packetrusher-region
+    app.kubernetes.io/region: {{ $region.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "oai-packetrusher-dev.selectorLabels" (dict "root" $root "region" $region) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "oai-packetrusher-dev.selectorLabels" (dict "root" $root "region" $region) | nindent 8 }}
+      annotations:
+        dev.oai/component-rollout-nonce: {{ $.Values.dev.rolloutNonce | quote }}
+        dev.oai/gnb-id: {{ $region.gnbId | quote }}
+        dev.oai/ue-count: {{ required "region.ueCount is required" $region.ueCount | quote }}
+        dev.oai/msin-start: {{ required "region.msinStart is required" $region.msinStart | quote }}
+    spec:
+      {{- include "oai-packetrusher-dev.podImagePullSecrets" $root | nindent 6 }}
+      {{- if and $.Values.tunnel.enabled $.Values.tunnel.podSecurityContext }}
+      securityContext:
+        {{- toYaml $.Values.tunnel.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: packetrusher
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          {{- if $.Values.tunnel.enabled }}
+          securityContext:
+            {{- toYaml $.Values.tunnel.securityContext | nindent 12 }}
+          {{- end }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PACKETRUSHER_REGION
+              value: {{ $region.name | quote }}
+            - name: PACKETRUSHER_GNB_ID
+              value: {{ $region.gnbId | quote }}
+            - name: PACKETRUSHER_UE_COUNT
+              value: {{ $region.ueCount | quote }}
+            - name: PACKETRUSHER_MSIN_START
+              value: {{ include "oai-packetrusher-dev.regionMsin" (dict "region" $region) | quote }}
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              mkdir -p /tmp/packetrusher
+              sed "s/__POD_IP__/${POD_IP}/g" /etc/packetrusher/config.template.yml > /tmp/packetrusher/config.yml
+              for iface in $(ip -o link show | awk -F': ' '$2 ~ /^(gnb|val)/ { print $2 }' | cut -d@ -f1); do
+                ip link delete "$iface" || true
+              done
+              while ip rule show | grep -q '^100:'; do
+                ip rule delete priority 100 || true
+              done
+              {{- if gt (int (default 0 $region.startupDelaySeconds)) 0 }}
+              echo "Delaying PacketRusher region=${PACKETRUSHER_REGION} startup by {{ $region.startupDelaySeconds }}s"
+              sleep {{ $region.startupDelaySeconds }}
+              {{- end }}
+              echo "Starting PacketRusher region=${PACKETRUSHER_REGION} gnbId=${PACKETRUSHER_GNB_ID} msinStart=${PACKETRUSHER_MSIN_START} ueCount=${PACKETRUSHER_UE_COUNT}"
+              exec /usr/local/bin/packetrusher \
+                --config /tmp/packetrusher/config.yml \
+                multi-ue \
+                -n {{ $region.ueCount }} \
+                --timeBetweenRegistration {{ default $.Values.defaults.timeBetweenRegistrationMs $region.timeBetweenRegistrationMs }} \
+                --timeBeforeDeregistration {{ default $.Values.defaults.timeBeforeDeregistrationMs $region.timeBeforeDeregistrationMs }} \
+                --timeBeforeReregistration {{ default $.Values.defaults.timeBeforeReregistrationMs $region.timeBeforeReregistrationMs }} \
+                --loopCount {{ default $.Values.defaults.loopCount $region.loopCount }} \
+                --numPduSessions {{ default $.Values.defaults.numPduSessions $region.numPduSessions }}{{- if $.Values.tunnel.enabled }} \
+                --tunnel \
+                --tunnel-vrf=false{{- end }}{{- if $loop }} \
+                --loop{{- end }}
+          volumeMounts:
+            - name: packetrusher-config
+              mountPath: /etc/packetrusher
+              readOnly: true
+          {{- with $.Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: packetrusher-config
+          configMap:
+            name: {{ include "oai-packetrusher-dev.configName" (dict "root" $root "region" $region) }}
+{{- end }}

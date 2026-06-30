@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: MIT
+
+global:
+  nameSuffix: -region-paris
+  region: region-paris
+  tac: "000001"
+  nrf:
+    url: http://oai-nrf:80
+  amf:
+    url: http://oai-amf
+    httpVersion: "2"
+  smf:
+    url: http://oai-smf
+    httpVersion: "2"
+  mongodb:
+    uri: mongodb://oai-nwdaf-database-region-paris:27017
+    databaseName: testing-region-paris
+  sbi:
+    eventNotifyUri: http://oai-nwdaf-sbi-region-paris:8080
+
+gateway:
+  host: oai-nwdaf-nbi-gateway-region-paris
+  service:
+    type: ClusterIP
+
+engine:
+  image:
+    repository: local/oai-nwdaf-engine
+    tag: dev
+    pullPolicy: Never
+
+nbiAnalytics:
+  image:
+    repository: local/oai-nwdaf-nbi-analytics
+    tag: dev
+    pullPolicy: Never
+
+nbiEvents:
+  image:
+    repository: local/oai-nwdaf-nbi-events
+    tag: dev
+    pullPolicy: Never
+
+nbiMl:
+  image:
+    repository: local/oai-nwdaf-nbi-ml
+    tag: dev
+    pullPolicy: Never
+
+sbi:
+  image:
+    repository: local/oai-nwdaf-sbi
+    tag: dev
+    pullPolicy: Never
+
+mtlf:
+  image:
+    repository: local/oai-nwdaf-mtlf
+    tag: dev
+    pullPolicy: Never
+  service:
+    name: oai-nwdaf-mtlf-region-paris
+  nf:
+    instanceId: 22222222-2222-4222-8222-222222222201
+  testStubModel:
+    enabled: true
+    modelId: region-paris-stub-latest
+    jobId: region-paris-stub-latest-job
+    weightBytes: 4096
+    notifyExistingOnSubscribe: true
+
+dccf:
+  image:
+    repository: local/oai-nwdaf-dccf
+    tag: dev
+    pullPolicy: Never
+  service:
+    name: oai-nwdaf-dccf-region-paris
+  nf:
+    instanceId: 22222222-2222-4222-8222-222222222101

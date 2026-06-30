@@ -1,0 +1,23 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /casmella/controller /config
+
+COPY src/casmella/controller/requirements.txt /tmp/controller-requirements.txt
+RUN python3 -m pip install --no-cache-dir -r /tmp/controller-requirements.txt
+
+COPY src/casmella/controller /casmella/controller
+COPY config /config
+
+WORKDIR /casmella/controller
+
+EXPOSE 9950
+
+CMD ["python3", "main.py", "--config", "/config/controller-config.yaml"]

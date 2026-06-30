@@ -1,0 +1,90 @@
+[
+  {
+    "arch": "Transformer",
+    "seq_len": 64,
+    "rounds_run": 50,
+    "params": 2480902,
+    "train_seconds": 1469.6,
+    "test": {
+      "accuracy": 99.97446236559139,
+      "f1_weighted": 99.97442915547083,
+      "f1_macro": 99.91374238705447
+    },
+    "eval": {
+      "accuracy": 98.40610144770959,
+      "f1_weighted": 98.39225452664257,
+      "f1_macro": 98.6076155427647
+    },
+    "latency": {
+      "batch_size": 16,
+      "ms_per_batch": 0.6682962831109762,
+      "ms_per_sequence": 0.041768517694436014
+    }
+  },
+  {
+    "arch": "Transformer",
+    "seq_len": 128,
+    "rounds_run": 50,
+    "params": 2480902,
+    "train_seconds": 825.0,
+    "test": {
+      "accuracy": 99.99663833907057,
+      "f1_weighted": 99.99663830771668,
+      "f1_macro": 99.99507198035677
+    },
+    "eval": {
+      "accuracy": 98.43817523768367,
+      "f1_weighted": 98.40783795517977,
+      "f1_macro": 98.58431684918422
+    },
+    "latency": {
+      "batch_size": 16,
+      "ms_per_batch": 1.2052374612540007,
+      "ms_per_sequence": 0.07532734132837504
+    }
+  },
+  {
+    "arch": "Transformer",
+    "seq_len": 256,
+    "rounds_run": 50,
+    "params": 2480902,
+    "train_seconds": 818.2,
+    "test": {
+      "accuracy": 99.98391938250428,
+      "f1_weighted": 99.98391742227568,
+      "f1_macro": 99.98234280746927
+    },
+    "eval": {
+      "accuracy": 98.92603446413138,
+      "f1_weighted": 98.911799396472,
+      "f1_macro": 99.01966516356102
+    },
+    "latency": {
+      "batch_size": 16,
+      "ms_per_batch": 2.5266845989972353,
+      "ms_per_sequence": 0.1579177874373272
+    }
+  },
+  {
+    "arch": "Transformer",
+    "seq_len": 512,
+    "rounds_run": 48,
+    "params": 2480902,
+    "train_seconds": 1458.1,
+    "test": {
+      "accuracy": 99.98400170648463,
+      "f1_weighted": 99.98399861887344,
+      "f1_macro": 99.9827221618364
+    },
+    "eval": {
+      "accuracy": 96.81823096885813,
+      "f1_weighted": 96.78031293819814,
+      "f1_macro": 97.4628729724353
+    },
+    "latency": {
+      "batch_size": 16,
+      "ms_per_batch": 6.173153622075915,
+      "ms_per_sequence": 0.3858221013797447
+    }
+  }
+]

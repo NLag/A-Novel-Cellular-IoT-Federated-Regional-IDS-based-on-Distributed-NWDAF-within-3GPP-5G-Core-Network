@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT
+
+apiVersion: v2
+name: oai-packetrusher-dev
+version: 0.1.0
+appVersion: 1.0.1
+description: Developer PacketRusher regional UE and gNB simulator for the OAI minikube lab
+type: application
+keywords:
+  - PacketRusher
+  - gNB
+  - UE
+  - OAI
+maintainers:
+  - name: OPENAIRINTERFACE
+    email: oaicicdteam@openairinterface.org

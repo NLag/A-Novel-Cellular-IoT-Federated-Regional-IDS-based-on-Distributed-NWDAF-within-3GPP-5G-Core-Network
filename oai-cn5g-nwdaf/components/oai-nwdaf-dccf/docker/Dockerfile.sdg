@@ -1,0 +1,23 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /casmella/sdg /config
+
+COPY src/casmella/sdg/requirements.txt /tmp/sdg-requirements.txt
+RUN python3 -m pip install --no-cache-dir -r /tmp/sdg-requirements.txt
+
+COPY src/casmella/sdg /casmella/sdg
+COPY config /config
+
+WORKDIR /casmella/sdg
+
+EXPOSE 80
+
+CMD ["python3", "main.py", "--config", "/config/sdg-config.yaml"]

@@ -1,0 +1,305 @@
+# Centralized Data Collection Configuration for DCCF
+# This configuration enables DCCF to receive ALL data:
+# - Protocol events via eBPF (already enabled)
+# - NF events from AMF/SMF via direct notifications
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dccf-config
+  namespace: oai-tutorial
+data:
+  dccf-config.yaml: |
+    # NWDAF Instance Configuration
+    nwdaf:
+      nfInstanceId: "nwdaf-dccf-001"
+      nfType: "NWDAF"
+      locality: "oai-tutorial"
+
+    # NRF Configuration for Service Discovery
+    nrf:
+      endpoint: "http://oai-nrf-service.oai-tutorial.svc.cluster.local:8080"
+      auto_register: true
+      heartbeat_interval: 60  # seconds
+
+    # DCCF Service Configuration
+    ndccf:
+      port: 8081
+      database_path: "/data/casmella.db"
+      retention_hours: 24
+      log_level: "INFO"
+
+    # Callback Configuration for NF Notifications
+    dccf:
+      # This is where AMF/SMF will send notifications
+      callback_uri: "http://oai-nwdaf-dccf.oai-tutorial.svc.cluster.local:8081"
+
+    # ===== CENTRALIZED COLLECTION: ENABLE NF EVENT SUBSCRIPTIONS =====
+    # This is the KEY setting for centralized data collection
+    nf_subscriptions:
+      enabled: true
+
+      # AMF Event Subscription Configuration
+      amf:
+        # AMF service endpoint
+        endpoint: "http://oai-amf-service.oai-tutorial.svc.cluster.local:80"
+
+        # Event types to subscribe to
+        events:
+          - "LOCATION_REPORT"
+          - "REGISTRATION_STATE_REPORT"
+          - "CONNECTIVITY_STATE_REPORT"
+          - "COMMUNICATION_FAILURE_REPORT"
+          - "UE_REACHABILITY_STATUS"
+          - "PRESENCE_IN_AOI_REPORT"
+          - "UES_IN_AREA_REPORT"
+          - "5GS_USER_STATE_REPORT"
+
+        # Notification callback (relative to callback_uri)
+        notification_path: "/dccf/amf-notifications"
+
+        # Subscription validity period
+        validity_time: 86400  # 24 hours in seconds
+
+      # SMF Event Subscription Configuration
+      smf:
+        # SMF service endpoint
+        endpoint: "http://oai-smf-service.oai-tutorial.svc.cluster.local:80"
+
+        # Event types to subscribe to
+        events:
+          - "PDU_SES_EST"       # PDU Session Establishment
+          - "PDU_SES_REL"       # PDU Session Release
+          - "QOS_MON"           # QoS Monitoring
+          - "UP_PATH_CH"        # User Plane Path Change
+          - "PLMN_CH"           # PLMN Change
+          - "UE_IP_CH"          # UE IP Address Change
+          - "DDDS"              # Downlink Data Delivery Status
+
+        # Notification callback
+        notification_path: "/dccf/smf-notifications"
+
+        # Subscription validity period
+        validity_time: 86400  # 24 hours
+
+    # Database Settings
+    database:
+      # Protocol events table (eBPF captured)
+      protocol_events:
+        enabled: true
+        batch_size: 100
+        batch_timeout: 1.0  # seconds
+
+      # NF events table (AMF/SMF notifications)
+      nf_events:
+        enabled: true
+        create_if_missing: true
+
+    # Performance Tuning
+    performance:
+      worker_threads: 4
+      max_connections: 100
+      request_timeout: 30  # seconds
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: casmella-agent-config
+  namespace: oai-tutorial
+data:
+  agent-config.yaml: |
+    # Casmella eBPF Agent Configuration
+    # Captures protocol events from 5G core network
+
+    database:
+      path: "/data/casmella.db"
+      enabled: true
+      retention_hours: 24
+
+    protocols:
+      # HTTP/2 (SBI communication)
+      http2:
+        enabled: true
+        port_filter: [80, 8080, 8081, 8888, 9090]
+
+      # PFCP (N4 interface)
+      pfcp:
+        enabled: true
+        port: 8805
+
+      # NGAP (N2 interface)
+      ngap:
+        enabled: true
+        port: 38412
+
+      # NAS (within NGAP)
+      nas:
+        enabled: true
+
+      # GTP-U (N3 interface)
+      gtpu:
+        enabled: true
+        port: 2152
+
+    # Kubernetes Integration
+    kubernetes:
+      enabled: true
+      pod_name_resolution: true
+      node_name_resolution: true
+
+    # Logging
+    logging:
+      level: "INFO"
+      format: "json"
+
+---
+# Example: NWDAF SBI Configuration (for fetching from DCCF)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nwdaf-sbi-config
+  namespace: oai-tutorial
+data:
+  nwdaf-config.yaml: |
+    # NWDAF SBI Configuration for Centralized Collection
+    # In centralized mode, NWDAF fetches ALL data from DCCF
+
+    # DCCF Client Configuration
+    dccf:
+      endpoint: "http://oai-nwdaf-dccf.oai-tutorial.svc.cluster.local:8081"
+
+      # Protocol events endpoint
+      protocol_events_api: "/ndccf-datamanagement/v1/data"
+
+      # NF events endpoint (NEW - for AMF/SMF notifications)
+      nf_events_api: "/ndccf-datamanagement/v1/nf-events"
+
+      # Statistics endpoint
+      stats_api: "/ndccf-datamanagement/v1/stats"
+
+      # Analytics endpoint
+      analytics_api: "/ndccf-datamanagement/v1/analytics"
+
+      # Connection settings
+      timeout: 30
+      retry_attempts: 3
+      retry_delay: 2
+
+    # DISABLE MongoDB for NF Events (not needed with centralized collection)
+    mongodb:
+      enabled: false
+      # If you want to keep MongoDB for other purposes:
+      # endpoint: "mongodb://oai-mongodb:27017"
+      # database: "nwdaf"
+
+    # Disable direct NF notification handlers (DCCF handles this now)
+    nf_notifications:
+      # AMF notifications go to DCCF now
+      amf:
+        direct_handler: false
+
+      # SMF notifications go to DCCF now
+      smf:
+        direct_handler: false
+
+    # Analytics Engine Configuration
+    analytics:
+      fetch_interval: 60  # Fetch data from DCCF every 60 seconds
+      window_size: 300    # 5 minute analysis window
+
+---
+# Service Definition for DCCF
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-dccf
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+  selector:
+    app: oai-nwdaf-dccf
+
+---
+# Example Deployment for DCCF with Centralized Collection
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oai-nwdaf-dccf
+  namespace: oai-tutorial
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oai-nwdaf-dccf
+  template:
+    metadata:
+      labels:
+        app: oai-nwdaf-dccf
+    spec:
+      containers:
+        - name: dccf
+          image: oai-nwdaf-dccf:latest
+          ports:
+            - containerPort: 8081
+              name: http
+          env:
+            - name: DCCF_PORT
+              value: "8081"
+            - name: LOG_LEVEL
+              value: "INFO"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+      volumes:
+        - name: config
+          configMap:
+            name: dccf-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: dccf-data-pvc
+
+---
+# PersistentVolumeClaim for DCCF Database
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dccf-data-pvc
+  namespace: oai-tutorial
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

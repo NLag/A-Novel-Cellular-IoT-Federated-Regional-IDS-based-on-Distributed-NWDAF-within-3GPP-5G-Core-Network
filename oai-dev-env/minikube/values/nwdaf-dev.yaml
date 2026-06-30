@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: MIT
+
+global:
+  imagePullSecrets: []
+  nrf:
+    url: http://oai-nrf:80
+  amf:
+    url: http://oai-amf
+    httpVersion: "2"
+  smf:
+    url: http://oai-smf
+    httpVersion: "2"
+  sbi:
+    eventNotifyUri: http://oai-nwdaf-sbi:8080
+
+database:
+  rolloutNonce: "0"
+
+gateway:
+  host: oai-nwdaf-nbi-gateway
+  rolloutNonce: "0"
+  service:
+    type: NodePort
+    nodePorts:
+      http: 30080
+      https: 30443
+      admin: 32001
+
+engine:
+  image:
+    repository: local/oai-nwdaf-engine
+    tag: dev
+    pullPolicy: Never
+  rolloutNonce: "0"
+
+nbiAnalytics:
+  image:
+    repository: local/oai-nwdaf-nbi-analytics
+    tag: dev
+    pullPolicy: Never
+  rolloutNonce: "0"
+
+nbiEvents:
+  image:
+    repository: local/oai-nwdaf-nbi-events
+    tag: dev
+    pullPolicy: Never
+  rolloutNonce: "0"
+
+nbiMl:
+  image:
+    repository: local/oai-nwdaf-nbi-ml
+    tag: dev
+    pullPolicy: Never
+  rolloutNonce: "0"
+
+sbi:
+  image:
+    repository: local/oai-nwdaf-sbi
+    tag: dev
+    pullPolicy: Never
+  rolloutNonce: "0"
+
+mtlf:
+  image:
+    repository: local/oai-nwdaf-mtlf
+    tag: dev
+    pullPolicy: Never
+  rolloutNonce: "0"
+  testStubModel:
+    enabled: true
+    modelId: stub-latest
+    jobId: stub-latest-job
+    weightBytes: 4096
+    notifyExistingOnSubscribe: true
+
+dccf:
+  image:
+    repository: local/oai-nwdaf-dccf
+    tag: dev
+    pullPolicy: Never
+  rolloutNonce: "0"

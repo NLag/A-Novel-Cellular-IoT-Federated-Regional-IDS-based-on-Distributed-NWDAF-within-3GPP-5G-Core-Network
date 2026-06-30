@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: oai-nwdaf-dccf-agent
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+    component: dccf-agent
+    project: oai-tutorial
+spec:
+  selector:
+    matchLabels:
+      app: oai-nwdaf-dccf
+      component: dccf-agent
+  template:
+    metadata:
+      labels:
+        app: oai-nwdaf-dccf
+        component: dccf-agent
+        project: oai-tutorial
+    spec:
+      serviceAccountName: casmella-agent
+      hostNetwork: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      
+      containers:
+        - name: dccf-agent
+          image: oai-nwdaf-dccf-agent:latest
+          imagePullPolicy: IfNotPresent  # Use local image from minikube
+          
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - NET_ADMIN
+                - BPF
+                - PERFMON
+                - SYS_RESOURCE
+          
+          ports:
+            - name: metrics
+              containerPort: 9950
+              protocol: TCP
+          
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: NRF_URL
+              value: "http://oai-nrf.oai-tutorial.svc.cluster.local:80"
+            - name: CLUSTER_NAME
+              value: "newS"
+          
+          volumeMounts:
+            - name: sys-bpf
+              mountPath: /sys/fs/bpf
+            - name: sys-kernel-debug
+              mountPath: /sys/kernel/debug
+            - name: lib-modules
+              mountPath: /lib/modules
+              readOnly: true
+            - name: usr-src
+              mountPath: /usr/src
+              readOnly: true
+            - name: agent-config
+              mountPath: /config/agent-config.yaml
+              subPath: agent-config.yaml
+              readOnly: true
+            - name: dccf-config
+              mountPath: /config/dccf-config.yaml
+              subPath: dccf-config.yaml
+              readOnly: true
+            - name: openapi-operations
+              mountPath: /config/openapi-operations.yaml
+              subPath: openapi-operations.yaml
+              readOnly: true
+            - name: database-storage
+              mountPath: /data
+
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          
+          livenessProbe:
+            tcpSocket:
+              port: 9950
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            tcpSocket:
+              port: 9950
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      
+      volumes:
+        - name: sys-bpf
+          hostPath:
+            path: /sys/fs/bpf
+            type: DirectoryOrCreate
+        - name: sys-kernel-debug
+          hostPath:
+            path: /sys/kernel/debug
+            type: Directory
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+            type: Directory
+        - name: usr-src
+          hostPath:
+            path: /usr/src
+            type: Directory
+        - name: agent-config
+          configMap:
+            name: casmella-agent-config
+        - name: dccf-config
+          configMap:
+            name: dccf-config
+        - name: openapi-operations
+          configMap:
+            name: openapi-operations
+        - name: database-storage
+          persistentVolumeClaim:
+            claimName: dccf-database-pvc

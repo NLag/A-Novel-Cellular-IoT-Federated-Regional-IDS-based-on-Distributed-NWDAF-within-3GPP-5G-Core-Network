@@ -1,0 +1,75 @@
+{{- if .Values.regions }}
+{{- $root := . -}}
+{{- range $region := .Values.regions }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oai-ids.regionName" (dict "root" $root "region" $region) }}
+  labels:
+    {{- include "oai-ids.regionLabels" (dict "root" $root "region" $region) | nindent 4 }}
+spec:
+  type: {{ $root.Values.service.type }}
+  selector:
+    {{- include "oai-ids.regionSelectorLabels" (dict "root" $root "region" $region) | nindent 4 }}
+  ports:
+    {{- range $root.Values.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ default "TCP" .protocol }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
+{{ end }}
+{{- if $root.Values.compatibilityService.enabled }}
+{{- $primaryName := default (first $root.Values.regions).name $root.Values.compatibilityService.primaryRegion -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oai-ids.name" $root }}
+  labels:
+    {{- include "oai-ids.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: ids-compatibility
+    app.kubernetes.io/region: {{ $primaryName }}
+spec:
+  type: {{ $root.Values.service.type }}
+  selector:
+    {{- include "oai-ids.selectorLabels" $root | nindent 4 }}
+    app.kubernetes.io/component: ids-region
+    app.kubernetes.io/region: {{ $primaryName }}
+  ports:
+    {{- range $root.Values.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ default "TCP" .protocol }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
+{{ end }}
+{{- else }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oai-ids.name" . }}
+  labels:
+    {{- include "oai-ids.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "oai-ids.selectorLabels" . | nindent 4 }}
+  ports:
+    {{- range .Values.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ default "TCP" .protocol }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
+{{ end }}

@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: MIT
+
+apiVersion: v2
+name: template-nf
+description: Standalone developer chart scaffold for a custom core-side NF
+type: application
+version: 0.1.0
+appVersion: dev

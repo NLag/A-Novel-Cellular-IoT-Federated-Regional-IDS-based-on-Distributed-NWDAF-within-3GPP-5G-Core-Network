@@ -1,0 +1,41 @@
+---
+# Service for Casmella eBPF Agent (metrics only)
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-dccf-agent
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+    component: dccf-agent
+    project: oai-tutorial
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 9950
+      targetPort: 9950
+      protocol: TCP
+  selector:
+    app: oai-nwdaf-dccf
+    component: dccf-agent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-dccf-agent-external
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+    component: dccf-agent
+spec:
+  type: NodePort
+  ports:
+    - name: metrics
+      port: 9950
+      targetPort: 9950
+      nodePort: 30950
+      protocol: TCP
+  selector:
+    app: oai-nwdaf-dccf
+    component: dccf-agent

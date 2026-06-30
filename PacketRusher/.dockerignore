@@ -1,0 +1,10 @@
+.git
+*.pcap
+csv-replay
+packetrusher
+lib/gtp5g/*.o
+lib/gtp5g/*.ko
+lib/gtp5g/*.mod
+lib/gtp5g/*.mod.c
+lib/gtp5g/.*.cmd
+lib/gtp5g/.tmp_versions

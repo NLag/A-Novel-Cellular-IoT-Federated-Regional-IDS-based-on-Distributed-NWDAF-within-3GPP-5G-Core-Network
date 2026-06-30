@@ -1,0 +1,35 @@
+# Whether to try to use Ring Buffers or not. If this parameter is False or the kernel version
+# doesn't support Ring Buffers, so Perf Buffers will be used.
+use_ring_buffers: True
+# Whether to try to use XDP or not.
+use_xdp: True
+# Whether to enabled HTTPS monitoring or not.
+monitor_https: False
+# Whether to debug events or not.
+debug_events: False
+# Whether to ignore sent requests and received responses or not. In some environments, these
+# parameters have to be set to False. This is because messages are observed only once.
+# Note: For NGAP, when the Access Network (AN) Node is outside the mesh observed by Camsmella,
+# this parameter must be set to False.
+# For HTTP/2 and PFCP, if you notice that you are missing exchanges, try to set the parameter to
+# False.
+ignore_sent_requests_and_received_responses:
+  http2: True
+  ngap: False
+  pfcp: True
+# Whether to debug operation time streams or not.
+debug_operation_time_streams: False
+# The names of N6 interfaces in UPF Pods. This information is necessary because N6 interfaces are
+# handled differently.
+n6_interface_names:
+  - n6
+# The port number to use for the Prometheus endpoint.
+prom_port: 9950
+
+# Database Configuration
+# Set enabled to True to store protocol events in SQLite database
+# The database can be accessed by OAI NWDAF for 3GPP compliant analytics
+database:
+  enabled: True
+  path: /data/casmella.db
+  retention_hours: 24

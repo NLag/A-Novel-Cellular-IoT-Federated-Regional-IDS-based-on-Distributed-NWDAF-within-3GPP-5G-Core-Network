@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-nbi-ml
+  namespace: oai-tutorial
+  labels:
+    project: oai-tutorial
+    component: nwdaf-nbi-ml
+spec:
+  ports:
+  - port: 80
+    targetPort: 8883
+    protocol: TCP
+  selector:
+    app: oai-nwdaf-nbi-ml
+    project: oai-tutorial
+    component: nwdaf-nbi-ml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oai-nwdaf-nbi-ml
+  namespace: oai-tutorial
+  labels:
+    project: oai-tutorial
+    component: nwdaf-nbi-ml
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oai-nwdaf-nbi-ml
+      project: oai-tutorial
+      component: nwdaf-nbi-ml
+  template:
+    metadata:
+      labels:
+        app: oai-nwdaf-nbi-ml
+        project: oai-tutorial
+        component: nwdaf-nbi-ml
+    spec:
+      runtimeClassName: nvidia   # Use the NVIDIA container runtime
+      containers:
+      - name: nbi-ml
+        image: oai-nwdaf-nbi-ml:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8883
+        env:
+        - name: SERVER_ADDR
+          value: "0.0.0.0:8883"
+        resources:
+          limits:
+            nvidia.com/gpu: 1   # Request 1 GPU
+          requests:
+            nvidia.com/gpu: 1

@@ -1,0 +1,21 @@
+# The cluster name. This parameter will be usefull in case a multi cluster architecture will be
+# used.
+cluster_name: minikube
+# Weither to enabled HTTPS monitoring or not.
+monitor_https: False
+# The names of exluded interfaces in the Pods. If a list is set, these interfaces will not be
+# handled.
+excluded_interfaces: []
+# The list of watchers. Each watcher is a dict with the following items:
+# - name: The watcher name.
+# - namespace: The Kubernetes namespace where to discover 5G core Pods.
+# - label_selector: The Kubernetes labelselector used to select 5G core Pods.
+watchers:
+- name: Open5GS_watcher
+  namespace: oai-tutorial      
+  label_selector: 'project=oai-tutorial' 
+- name: UERANSIM_watcher
+  namespace: oai-tutorial      
+  label_selector: 'app=ueransim'
+# The port number to use for the Prometheus endpoint.
+prom_port: 9950

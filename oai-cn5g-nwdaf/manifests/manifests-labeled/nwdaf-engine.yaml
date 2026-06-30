@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oai-nwdaf-engine
+  namespace: oai-tutorial
+  labels:
+    project: oai-tutorial
+    component: nwdaf-engine
+spec:
+  ports:
+  - port: 80
+    targetPort: 8888
+    protocol: TCP
+  selector:
+    app: oai-nwdaf-engine
+    project: oai-tutorial
+    component: nwdaf-engine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oai-nwdaf-engine
+  namespace: oai-tutorial
+  labels:
+    project: oai-tutorial
+    component: nwdaf-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oai-nwdaf-engine
+      project: oai-tutorial
+      component: nwdaf-engine
+  template:
+    metadata:
+      labels:
+        app: oai-nwdaf-engine
+        project: oai-tutorial
+        component: nwdaf-engine
+    spec:
+      containers:
+      - name: engine
+        image: oai-nwdaf-engine:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+        env:
+        - name: MONGODB_URI
+          value: "mongodb://oai-nwdaf-database:27017"
+        - name: MONGODB_DATABASE_NAME
+          value: "testing"
+        - name: MONGODB_COLLECTION_NAME_AMF
+          value: "amf"
+        - name: MONGODB_COLLECTION_NAME_SMF
+          value: "smf"
+        - name: ENGINE_NUM_OF_UE_ROUTE
+          value: "/network_performance/num_of_ue"
+        - name: ENGINE_SESS_SUCC_RATIO_ROUTE
+          value: "/network_performance/sess_succ_ratio"
+        - name: ENGINE_UE_COMMUNICATION_ROUTE
+          value: "/ue_communication"
+        - name: ENGINE_UE_MOBILITY_ROUTE
+          value: "/ue_mobility"
+        - name: SERVER_ADDR
+          value: "0.0.0.0:8888"

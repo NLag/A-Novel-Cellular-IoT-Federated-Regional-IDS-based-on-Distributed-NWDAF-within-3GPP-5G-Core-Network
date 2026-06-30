@@ -1,0 +1,217 @@
+# SPDX-License-Identifier: MIT
+
+global:
+  imagePullSecrets: []
+  nameSuffix: ""
+  region: lab
+  tac: "000001"
+  mongodb:
+    uri: mongodb://oai-nwdaf-database:27017
+    databaseName: testing
+    collectionNameAmf: amf
+    collectionNameSmf: smf
+    collectionNameIdsReports: ids_reports
+    collectionNameStorageMetadata: storage_metadata
+  sharedStorage:
+    enabled: true
+    mountPath: /oai-5g-storage
+    existingClaim: ""
+    hostPath: /oai-5g-host-storage
+    hostPathType: DirectoryOrCreate
+  nrf:
+    url: http://oai-nrf:80
+  amf:
+    url: http://oai-amf
+    httpVersion: "2"
+    apiRoute: /test/amf
+    subscriptionRoute: /namf-evts/v1
+    notificationForwardRoute: /sbi/notification/amf
+    notificationId: "1"
+    notifyCorrelationId: string
+  smf:
+    url: http://oai-smf
+    httpVersion: "2"
+    apiRoute: /test/smf
+    subscriptionRoute: /nsmf_event-exposure/v1
+    notificationForwardRoute: /sbi/notification/smf
+    notificationId: "2"
+    notifyCorrelationId: string
+  sbi:
+    eventNotifyUri: http://oai-nwdaf-sbi:8080
+
+database:
+  image:
+    repository: mongo
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 27017
+  rolloutNonce: "0"
+
+gateway:
+  image:
+    repository: kong
+    tag: latest
+    pullPolicy: IfNotPresent
+  host: oai-nwdaf-nbi-gateway
+  rolloutNonce: "0"
+  service:
+    type: NodePort
+    httpPort: 80
+    httpsPort: 443
+    adminPort: 8001
+    nodePorts:
+      http: 30080
+      https: 30443
+      admin: 32001
+
+engine:
+  image:
+    repository: local/oai-nwdaf-engine
+    tag: dev
+    pullPolicy: Never
+  port: 8080
+  rolloutNonce: "0"
+  routes:
+    numOfUe: /network_performance/num_of_ue
+    sessSuccRatio: /network_performance/sess_succ_ratio
+    ueCommunication: /ue_communication
+    ueMobility: /ue_mobility
+
+nbiAnalytics:
+  image:
+    repository: local/oai-nwdaf-nbi-analytics
+    tag: dev
+    pullPolicy: Never
+  port: 8080
+  rolloutNonce: "0"
+
+nbiEvents:
+  image:
+    repository: local/oai-nwdaf-nbi-events
+    tag: dev
+    pullPolicy: Never
+  port: 8080
+  rolloutNonce: "0"
+
+nbiMl:
+  image:
+    repository: local/oai-nwdaf-nbi-ml
+    tag: dev
+    pullPolicy: Never
+  port: 8080
+  rolloutNonce: "0"
+
+sbi:
+  image:
+    repository: local/oai-nwdaf-sbi
+    tag: dev
+    pullPolicy: Never
+  port: 8080
+  rolloutNonce: "0"
+
+mtlf:
+  image:
+    repository: local/oai-nwdaf-mtlf
+    tag: dev
+    pullPolicy: Never
+  port: 8082
+  rolloutNonce: "0"
+  service:
+    name: oai-nwdaf-mtlf-service
+  nf:
+    instanceId: nwdaf-mtlf-001
+  nrf:
+    autoRegister: true
+    heartbeatInterval: 30
+  dccf:
+    eventTypes:
+      - NF_LOAD
+      - UE_MOBILITY
+      - QOS_SUSTAINABILITY
+    protocols:
+      - http2
+      - ngap
+      - pfcp
+    notificationInterval: 60
+  training:
+    scriptPath: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/DL_multiclass_regional_models.py
+    modelsDir: /oai-5g-storage/IDS_RELATED_STORAGE/MODEL
+    defaultEpochs: 100
+    pythonBin: python3
+    passOutputDirArgs: false
+    workingDir: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research
+    researchWorkspace: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research
+    normalizedPackage: nwdaf_mtlf_model_training
+  trainingScenario:
+    scenario: regional
+    modelArchitecture: Transformer
+    modelArchitectures:
+      MLP:
+        hidden_dim: 256
+      CNN: {}
+      RNN:
+        hidden_dim: 256
+        num_layers: 1
+      GRU:
+        hidden_dim: 256
+        num_layers: 1
+      LSTM:
+        hidden_dim: 256
+        num_layers: 1
+      Transformer:
+        hidden_dim: 256
+        nhead: 8
+        num_layers: 2
+    workingDir: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research
+    researchWorkspace: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research
+    normalizedPackage: nwdaf_mtlf_model_training
+    passOutputDirArgs: false
+    recordOutputs: true
+    maxRecordedFiles: 1000
+    metadataExcludeDirs:
+      - datasets
+      - .git
+      - __pycache__
+      - .venv
+    scripts:
+      centralized: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/DL_multiclass_centralize.py
+      regional: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/DL_multiclass_regional_models.py
+      federated-averaging: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/DL_multiclass_federated.py
+      federated-distillation: /oai-5g-storage/IDS_RELATED_STORAGE/TRAINING_CODE/IDS_NWDAF_DL_Research/DL_multiclass_Federated_Distillation.py
+  testStubModel:
+    enabled: false
+    modelId: stub-latest
+    jobId: stub-latest-job
+    weightBytes: 4096
+    notifyExistingOnSubscribe: true
+  storage:
+    models:
+      existingClaim: ""
+    workspace:
+      existingClaim: ""
+    trainingCode:
+      existingClaim: ""
+      mountPath: /finaltrain
+
+dccf:
+  image:
+    repository: local/oai-nwdaf-dccf
+    tag: dev
+    pullPolicy: Never
+  port: 8081
+  rolloutNonce: "0"
+  service:
+    name: oai-nwdaf-dccf
+  nf:
+    instanceId: 58f8ec8c-8a94-5ab1-86f6-7c989cb0cb74
+  nrf:
+    autoRegister: true
+    heartbeatInterval: 10
+  nfSubscriptions:
+    enabled: true
+    useHttp2: true
+    amfEnabled: true
+    smfEnabled: true
+  storage:
+    data:
+      existingClaim: ""

@@ -1,0 +1,97 @@
+# SPDX-License-Identifier: MIT
+
+global:
+  coreNetworkConfigMap: oai-5g-core-dev
+  imagePullSecrets: []
+  dev:
+    rolloutNonce: "0"
+
+mysql:
+  imagePullSecrets: []
+  persistence:
+    enabled: false
+
+ims:
+  enabled: false
+
+oai-nrf:
+  imagePullSecrets: []
+  dev:
+    rolloutNonce: "0"
+
+oai-nssf:
+  imagePullSecrets: []
+  dev:
+    rolloutNonce: "0"
+
+oai-lmf:
+  imagePullSecrets: []
+  dev:
+    rolloutNonce: "0"
+
+oai-udr:
+  imagePullSecrets: []
+  start:
+    udr: true
+  dev:
+    rolloutNonce: "0"
+
+oai-udm:
+  imagePullSecrets: []
+  dev:
+    rolloutNonce: "0"
+
+oai-ausf:
+  imagePullSecrets: []
+  dev:
+    rolloutNonce: "0"
+
+oai-amf:
+  imagePullSecrets: []
+  multus:
+    enabled: false
+  dev:
+    rolloutNonce: "0"
+
+oai-smf:
+  imagePullSecrets: []
+  multus:
+    enabled: false
+  config:
+    imsHost: ""
+  extraEnv:
+    OAI_SMF_IDS_PCF_PROBE_ENABLED: "true"
+    OAI_SMF_IDS_DUPLICATION_HOST: "oai-ids"
+    OAI_SMF_IDS_DUPLICATION_HOST_BY_TAC: "000001=oai-ids-region-paris,000002=oai-ids-region-lyon,000003=oai-ids-region-marseille,000004=oai-ids-region-toulouse,000005=oai-ids-region-nice"
+    OAI_SMF_IDS_DUPLICATION_HOST_BY_SUPI: "001010000000100-001010000000199=oai-ids-region-paris,001010000000200-001010000000299=oai-ids-region-lyon,001010000000300-001010000000399=oai-ids-region-marseille,001010000000400-001010000000499=oai-ids-region-toulouse,001010000000500-001010000000599=oai-ids-region-nice"
+    OAI_SMF_IDS_DUPLICATION_PORT: "2152"
+    OAI_SMF_IDS_DUPLICATION_TEID: "0x1D5"
+  dev:
+    rolloutNonce: "0"
+
+oai-upf:
+  imagePullSecrets: []
+  multus:
+    enabled: false
+  dev:
+    rolloutNonce: "0"
+
+oai-traffic-server:
+  imagePullSecrets: []
+  nfimage:
+    repository: local/oai-traffic-server
+    version: dev
+    pullPolicy: Never
+  multus:
+    enabled: false
+  dev:
+    rolloutNonce: "0"
+
+packetRusher:
+  enabled: true
+  amfNgap:
+    service:
+      type: NodePort
+      port: 38412
+      targetPort: 38412
+      nodePort: 31412

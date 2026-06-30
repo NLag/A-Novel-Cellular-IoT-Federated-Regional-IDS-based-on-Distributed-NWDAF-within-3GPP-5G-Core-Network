@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: MIT
+
+image:
+  repository: local/oai-5g-packetrusher
+  tag: dev
+  pullPolicy: Never
+
+amf:
+  host: oai-amf-ngap.oai-5g-core.svc.cluster.local
+  port: 38412
+
+tunnel:
+  enabled: true
+  vrf: false
+
+regions:
+  - name: region-paris
+    ueCount: 100
+    msinStart: 100
+    gnbId: "000008"
+    tac: "000001"
+    startupDelaySeconds: 0
+    timeBetweenRegistrationMs: 2000
+    loop: false
+  - name: region-lyon
+    ueCount: 100
+    msinStart: 200
+    gnbId: "000009"
+    tac: "000002"
+    startupDelaySeconds: 15
+    timeBetweenRegistrationMs: 2000
+    loop: false
+  - name: region-marseille
+    ueCount: 100
+    msinStart: 300
+    gnbId: "000010"
+    tac: "000003"
+    startupDelaySeconds: 30
+    timeBetweenRegistrationMs: 2000
+    loop: false
+  - name: region-toulouse
+    ueCount: 100
+    msinStart: 400
+    gnbId: "000011"
+    tac: "000004"
+    startupDelaySeconds: 45
+    timeBetweenRegistrationMs: 2000
+    loop: false
+  - name: region-nice
+    ueCount: 100
+    msinStart: 500
+    gnbId: "000012"
+    tac: "000005"
+    startupDelaySeconds: 60
+    timeBetweenRegistrationMs: 2000
+    loop: false

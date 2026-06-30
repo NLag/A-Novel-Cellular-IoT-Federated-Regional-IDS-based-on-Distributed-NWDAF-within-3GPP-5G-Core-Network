@@ -1,0 +1,36 @@
+# DCCF Service Dockerfile
+# Lightweight FastAPI service for Ndccf DataManagement API
+FROM python:3.11-slim AS oai-nwdaf-dccf
+
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install system dependencies (curl for HTTP/2 h2c support with OAI AMF/SMF)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+# Use hypercorn instead of uvicorn for HTTP/2 support (needed for OAI AMF/SMF notifications)
+RUN pip install --no-cache-dir \
+    fastapi \
+    hypercorn \
+    httpx[http2] \
+    pymongo \
+    pyyaml
+
+# Copy service code
+COPY src/dccf/main.py /app/
+COPY src/dccf/nrf_client.py /app/
+COPY src/dccf/database_reader.py /app/
+COPY src/dccf/mongo_report_store.py /app/
+COPY src/dccf/subscription_manager.py /app/
+COPY src/dccf/nf_event_subscription.py /app/
+
+# Expose Ndccf API port
+EXPOSE 8081
+
+# Run the FastAPI service with HTTP/2 support
+CMD ["sh", "-c", "hypercorn main:app --bind 0.0.0.0:${DCCF_PORT:-8081} --worker-class asyncio"]

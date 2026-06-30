@@ -1,0 +1,5 @@
+# The address of the Prometheus or Prometheus-compatible (e.g. Mimir) server from which Casmella's
+# metrics can be retrieved.
+prom_address: 'prom-kube-prometheus-stack-prometheus.prometheus.svc.cluster.local:9090'
+# The port number to use for the SDG endpoint.
+sdg_port: 80

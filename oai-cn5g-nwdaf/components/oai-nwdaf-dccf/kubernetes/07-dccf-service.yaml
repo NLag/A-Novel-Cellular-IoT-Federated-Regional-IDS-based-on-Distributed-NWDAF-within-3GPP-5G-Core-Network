@@ -1,0 +1,23 @@
+# NOTE: This file is deprecated. Use:
+# - 09-dccf-service.yaml for Casmella agent metrics
+# - 12-dccf-service-deployment.yaml for DCCF service with Nadrf API
+#
+# Keeping for backward compatibility
+apiVersion: v1
+kind: Service
+metadata:
+  name: casmella-agent-metrics
+  namespace: oai-tutorial
+  labels:
+    app: casmella-agent
+    component: dccf
+    project: oai-tutorial
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 9950
+      targetPort: 9950
+      protocol: TCP
+  selector:
+    app: casmella-agent

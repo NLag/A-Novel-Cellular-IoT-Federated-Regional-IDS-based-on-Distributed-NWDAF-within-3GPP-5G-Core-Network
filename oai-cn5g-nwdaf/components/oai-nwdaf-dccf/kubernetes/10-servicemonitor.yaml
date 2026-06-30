@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: oai-nwdaf-dccf
+  namespace: oai-tutorial
+  labels:
+    app: oai-nwdaf-dccf
+    release: prom
+spec:
+  selector:
+    matchLabels:
+      app: oai-nwdaf-dccf
+      component: dccf-agent
+  endpoints:
+    - port: metrics
+      interval: 15s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - oai-tutorial

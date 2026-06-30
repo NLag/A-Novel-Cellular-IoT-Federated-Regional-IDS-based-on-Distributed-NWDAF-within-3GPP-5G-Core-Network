@@ -1,0 +1,116 @@
+# SPDX-License-Identifier: LicenseRef-CSSL-1.0
+
+info:
+  version: 2.0.0
+  description: OAI NSSF developer slice configuration
+
+configuration:
+  nsiInfoList:
+    - snssai:
+        sst: 1
+        sd: "FFFFFF"
+      nsiInformationList:
+        nrfId: http://oai-nrf/nnrf-disc/v1/nf-instances
+        nsiId: "1"
+        nrfNfMgtUri: http://oai-nrf/nnrf-nfm/v1/nf-instances
+  taInfoList:
+    - tai:
+        plmnId:
+          mcc: "001"
+          mnc: "01"
+        tac: "1"
+      supportedSnssaiList:
+        - sst: 1
+          sd: "FFFFFF"
+    - tai:
+        plmnId:
+          mcc: "001"
+          mnc: "01"
+        tac: "2"
+      supportedSnssaiList:
+        - sst: 1
+          sd: "FFFFFF"
+    - tai:
+        plmnId:
+          mcc: "001"
+          mnc: "01"
+        tac: "3"
+      supportedSnssaiList:
+        - sst: 1
+          sd: "FFFFFF"
+    - tai:
+        plmnId:
+          mcc: "001"
+          mnc: "01"
+        tac: "4"
+      supportedSnssaiList:
+        - sst: 1
+          sd: "FFFFFF"
+    - tai:
+        plmnId:
+          mcc: "001"
+          mnc: "01"
+        tac: "5"
+      supportedSnssaiList:
+        - sst: 1
+          sd: "FFFFFF"
+  amfInfoList:
+    - targetAmfSet: 001-01-001-01
+      nrfAmfSet: http://oai-nrf/nnrf-disc/v1/nf-instances
+      nrfAmfSetNfMgtUri: http://oai-nrf/nnrf-nfm/v1/nf-instances
+      amfList:
+        - nfId: 00000000-0000-0000-0000-000000000001
+          supportedNssaiAvailabilityData:
+            tai:
+              plmnId:
+                mcc: "001"
+                mnc: "01"
+              tac: "1"
+            supportedSnssaiList:
+              - sst: 1
+                sd: "FFFFFF"
+        - nfId: 00000000-0000-0000-0000-000000000001
+          supportedNssaiAvailabilityData:
+            tai:
+              plmnId:
+                mcc: "001"
+                mnc: "01"
+              tac: "2"
+            supportedSnssaiList:
+              - sst: 1
+                sd: "FFFFFF"
+        - nfId: 00000000-0000-0000-0000-000000000001
+          supportedNssaiAvailabilityData:
+            tai:
+              plmnId:
+                mcc: "001"
+                mnc: "01"
+              tac: "3"
+            supportedSnssaiList:
+              - sst: 1
+                sd: "FFFFFF"
+        - nfId: 00000000-0000-0000-0000-000000000001
+          supportedNssaiAvailabilityData:
+            tai:
+              plmnId:
+                mcc: "001"
+                mnc: "01"
+              tac: "4"
+            supportedSnssaiList:
+              - sst: 1
+                sd: "FFFFFF"
+        - nfId: 00000000-0000-0000-0000-000000000001
+          supportedNssaiAvailabilityData:
+            tai:
+              plmnId:
+                mcc: "001"
+                mnc: "01"
+              tac: "5"
+            supportedSnssaiList:
+              - sst: 1
+                sd: "FFFFFF"
+  plmnInfoList:
+    - operatorName: OpenAirInterface
+      homePlmnId:
+        mcc: "001"
+        mnc: "01"

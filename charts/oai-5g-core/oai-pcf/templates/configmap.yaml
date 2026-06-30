@@ -1,0 +1,33 @@
+{{- if not .Values.global }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-configmap
+  labels:
+    app: {{ .Release.Name }}
+data:
+  {{- if .Values.configYaml }}
+  config.yaml: |
+{{ .Values.configYaml | indent 4 }}
+  {{- else }}
+  {{ (.Files.Glob "config.yaml").AsConfig | indent 2 | trim }}
+  {{- end }}
+{{- end }}
+{{- if .Values.policies.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-policies
+  labels:
+    app: {{ .Release.Name }}
+data:
+  policy_decisions.yaml: |
+{{ .Values.policies.policyDecisions | indent 4 }}
+  pcc_rules.yaml: |
+{{ .Values.policies.pccRules | indent 4 }}
+  traffic_rules.yaml: |
+{{ .Values.policies.trafficRules | indent 4 }}
+  qos_data.yaml: |
+{{ .Values.policies.qosData | indent 4 }}
+{{- end }}

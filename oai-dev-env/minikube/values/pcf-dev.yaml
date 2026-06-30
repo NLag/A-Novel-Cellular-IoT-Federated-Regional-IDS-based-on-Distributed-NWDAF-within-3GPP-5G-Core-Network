@@ -1,0 +1,81 @@
+nfimage:
+  repository: local/oai-pcf
+  version: dev
+  pullPolicy: Never
+
+image:
+  repository: local/oai-pcf
+  tag: dev
+  pullPolicy: Never
+
+readinessProbe: true
+livenessProbe: false
+
+resources:
+  define: false
+
+configYaml: |
+  # OAI PCF configuration for the local minikube development lab.
+  log_level:
+    general: debug
+
+  register_nf:
+    general: yes
+
+  http_version: 2
+
+  nfs:
+    pcf:
+      host: oai-pcf
+      sbi:
+        port: 80
+        api_version: v1
+        interface_name: eth0
+    nrf:
+      host: oai-nrf
+      sbi:
+        port: 80
+        api_version: v1
+        interface_name: eth0
+    amf:
+      host: oai-amf
+      sbi:
+        port: 80
+        api_version: v1
+    smf:
+      host: oai-smf
+      sbi:
+        port: 80
+        api_version: v1
+
+  pcf:
+    local_policy:
+      policy_decisions_path: /openair-pcf/policies/policy_decisions
+      pcc_rules_path: /openair-pcf/policies/pcc_rules
+      traffic_rules_path: /openair-pcf/policies/traffic_rules
+      qos_data_path: /openair-pcf/policies/qos_data
+
+policies:
+  enabled: true
+  policyDecisions: |
+    ids_oai_duplication:
+      dnn: "oai"
+      pcc_rules:
+        - ids-duplication
+    ids_default_duplication:
+      pcc_rules:
+        - ids-duplication
+  pccRules: |
+    ids-duplication:
+      flowInfos:
+        - flowDescription: "permit out ip from any to assigned"
+          flowDirection: BIDIRECTIONAL
+      precedence: 100
+      refTcData:
+        - ids-traffic-control
+  trafficRules: |
+    ids-traffic-control:
+      flowStatus: ENABLED
+      traffCorreInd: true
+  qosData: |
+    {}

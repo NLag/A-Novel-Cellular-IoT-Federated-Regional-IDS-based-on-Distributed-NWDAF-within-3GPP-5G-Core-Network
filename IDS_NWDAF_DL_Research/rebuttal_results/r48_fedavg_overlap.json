@@ -1,0 +1,15 @@
+{
+  "scheme": "FedAvg",
+  "split": "overlapping",
+  "arch": "Transformer",
+  "rounds": 50,
+  "test": {
+    "accuracy": 99.99731067125646,
+    "f1_weighted": 99.99731069354917
+  },
+  "eval": {
+    "accuracy": 96.66635155574762,
+    "f1_weighted": 96.65791589900697,
+    "f1_macro": 95.6013011724607
+  }
+}

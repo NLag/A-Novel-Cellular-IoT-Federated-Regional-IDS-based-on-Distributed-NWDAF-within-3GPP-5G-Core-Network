@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: oai-tutorial
+data:
+  kong.yaml: |
+    _format_version: "1.1"
+    _transform: true
+    services:
+    - name: oai-nwdaf-nbi-analytics
+      url: http://oai-nwdaf-nbi-analytics:80/nnwdaf-analyticsinfo/v1/analytics
+      routes:
+        - name: oai-nwdaf-nbi-analytics-route
+          paths: 
+          - /nnwdaf-analyticsinfo/v1/analytics
+    - name: oai-nwdaf-nbi-events
+      url: http://oai-nwdaf-nbi-events:80/nnwdaf-eventssubscription/v1
+      routes:
+        - name: oai-nwdaf-nbi-events-route
+          paths:
+          - /nnwdaf-eventssubscription/v1
+    - name: oai-nwdaf-nbi-ml
+      url: http://oai-nwdaf-nbi-ml:80/nnwdaf-mlmodelprovision/v1
+      routes:
+        - name: oai-nwdaf-nbi-ml-route
+          paths:
+          - /nnwdaf-mlmodelprovision/v1

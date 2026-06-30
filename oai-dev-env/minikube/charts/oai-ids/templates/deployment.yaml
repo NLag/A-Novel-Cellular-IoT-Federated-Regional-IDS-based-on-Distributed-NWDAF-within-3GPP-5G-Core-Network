@@ -1,0 +1,229 @@
+{{- if .Values.regions }}
+{{- $root := . -}}
+{{- range $region := .Values.regions }}
+{{- $ids := include "oai-ids.regionIdsConfig" (dict "root" $root "region" $region) | fromYaml -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "oai-ids.regionName" (dict "root" $root "region" $region) }}
+  labels:
+    {{- include "oai-ids.regionLabels" (dict "root" $root "region" $region) | nindent 4 }}
+spec:
+  replicas: 1
+  {{- with $root.Values.deploymentStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "oai-ids.regionSelectorLabels" (dict "root" $root "region" $region) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "oai-ids.regionSelectorLabels" (dict "root" $root "region" $region) | nindent 8 }}
+      annotations:
+        dev.oai/nf-rollout-nonce: {{ $root.Values.dev.rolloutNonce | quote }}
+        dev.oai/ids-instance-id: {{ $ids.instanceId | quote }}
+        dev.oai/ids-region: {{ $ids.servingArea.region | quote }}
+        dev.oai/ids-tac: {{ $ids.servingArea.tac | quote }}
+    spec:
+      {{- with $root.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $root.Values.serviceAccount.create }}
+      serviceAccountName: {{ include "oai-ids.name" $root }}
+      {{- end }}
+      {{- with $root.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $root.Values.waitForNrf.enabled }}
+      initContainers:
+        - name: wait-for-nrf
+          image: docker.io/oaisoftwarealliance/oai-tcpdump-init:alpine-3.20
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - until ncat -zv {{ $root.Values.waitForNrf.host }} {{ $root.Values.waitForNrf.port }}; do echo waiting for NRF; sleep 1; done
+      {{- end }}
+      containers:
+        - name: ids
+          image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          env:
+            - name: IDS_CONFIG_PATH
+              value: /app/config/ids.yaml
+            - name: IDS_INSTANCE_ID
+              value: {{ $ids.instanceId | quote }}
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            {{- range $root.Values.containerPorts }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ default "TCP" .protocol }}
+            {{- end }}
+          volumeMounts:
+            - name: ids-config
+              mountPath: /app/config/ids.yaml
+              subPath: ids.yaml
+              readOnly: true
+            {{- include "oai-ids.sharedStorageMount" $root | nindent 12 }}
+          {{- with $root.Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $root.Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ $root.Values.readinessProbe.path | quote }}
+              port: {{ $root.Values.readinessProbe.port | quote }}
+            initialDelaySeconds: {{ $root.Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $root.Values.readinessProbe.periodSeconds }}
+          {{- end }}
+          {{- if $root.Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ $root.Values.livenessProbe.path | quote }}
+              port: {{ $root.Values.livenessProbe.port | quote }}
+            initialDelaySeconds: {{ $root.Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $root.Values.livenessProbe.periodSeconds }}
+          {{- end }}
+          {{- with $root.Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: ids-config
+          configMap:
+            name: {{ include "oai-ids.regionConfigName" (dict "root" $root "region" $region) }}
+        {{- include "oai-ids.sharedStorageVolume" $root | nindent 8 }}
+{{ end }}
+{{- else }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "oai-ids.name" . }}
+  labels:
+    {{- include "oai-ids.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  {{- with .Values.deploymentStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "oai-ids.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "oai-ids.selectorLabels" . | nindent 8 }}
+      annotations:
+        dev.oai/nf-rollout-nonce: {{ .Values.dev.rolloutNonce | quote }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "oai-ids.name" . }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.waitForNrf.enabled }}
+      initContainers:
+        - name: wait-for-nrf
+          image: docker.io/oaisoftwarealliance/oai-tcpdump-init:alpine-3.20
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - until ncat -zv {{ .Values.waitForNrf.host }} {{ .Values.waitForNrf.port }}; do echo waiting for NRF; sleep 1; done
+      {{- end }}
+      containers:
+        - name: ids
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: IDS_CONFIG_PATH
+              value: /app/config/ids.yaml
+            - name: IDS_INSTANCE_ID
+              value: {{ .Values.ids.instanceId | quote }}
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            {{- range .Values.containerPorts }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ default "TCP" .protocol }}
+            {{- end }}
+          volumeMounts:
+            - name: ids-config
+              mountPath: /app/config/ids.yaml
+              subPath: ids.yaml
+              readOnly: true
+            {{- include "oai-ids.sharedStorageMount" . | nindent 12 }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path | quote }}
+              port: {{ .Values.readinessProbe.port | quote }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          {{- end }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path | quote }}
+              port: {{ .Values.livenessProbe.port | quote }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: ids-config
+          configMap:
+            name: {{ include "oai-ids.name" . }}-config
+        {{- include "oai-ids.sharedStorageVolume" . | nindent 8 }}
+{{ end }}

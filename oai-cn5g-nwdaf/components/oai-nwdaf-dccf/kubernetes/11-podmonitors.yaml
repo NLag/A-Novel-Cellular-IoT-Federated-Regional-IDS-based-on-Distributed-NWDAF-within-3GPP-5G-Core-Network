@@ -1,0 +1,41 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: oai-nwdaf-dccf-agent-monitor
+  namespace: prometheus
+  labels:
+    release: prom
+    app: oai-nwdaf-dccf
+spec:
+  selector:
+    matchLabels:
+      app: oai-nwdaf-dccf
+      component: dccf-agent
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 15s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - oai-tutorial
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: casmella-controller-monitor
+  namespace: prometheus
+  labels:
+    release: prom
+    app: casmella-controller
+spec:
+  selector:
+    matchLabels:
+      app: casmella-controller
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 15s
+      path: /metrics
+  namespaceSelector:
+    matchNames:
+      - oai-tutorial

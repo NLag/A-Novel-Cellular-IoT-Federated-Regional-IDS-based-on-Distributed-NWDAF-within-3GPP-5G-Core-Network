@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: casmella-agent
+  namespace: oai-tutorial
+  labels:
+    app: casmella-agent
+    component: dccf-agent
+    project: oai-tutorial
+spec:
+  selector:
+    matchLabels:
+      app: casmella-agent
+  template:
+    metadata:
+      labels:
+        app: casmella-agent
+        component: dccf-agent
+        project: oai-tutorial
+    spec:
+      serviceAccountName: casmella-agent
+      hostNetwork: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: agent
+          image: oai-nwdaf-dccf-agent:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+                - NET_ADMIN
+                - BPF
+                - PERFMON
+                - SYS_RESOURCE
+          ports:
+            - name: metrics
+              containerPort: 9950
+              protocol: TCP
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          volumeMounts:
+            - name: sys-bpf
+              mountPath: /sys/fs/bpf
+            - name: sys-kernel-debug
+              mountPath: /sys/kernel/debug
+            - name: lib-modules
+              mountPath: /lib/modules
+              readOnly: true
+            - name: usr-src
+              mountPath: /usr/src
+              readOnly: true
+            - name: agent-config
+              mountPath: /config/agent-config.yaml
+              subPath: agent-config.yaml
+              readOnly: true
+            - name: openapi-operations
+              mountPath: /config/openapi-operations.yaml
+              subPath: openapi-operations.yaml
+              readOnly: true
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+      volumes:
+        - name: sys-bpf
+          hostPath:
+            path: /sys/fs/bpf
+            type: DirectoryOrCreate
+        - name: sys-kernel-debug
+          hostPath:
+            path: /sys/kernel/debug
+            type: Directory
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+            type: Directory
+        - name: usr-src
+          hostPath:
+            path: /usr/src
+            type: Directory
+        - name: agent-config
+          configMap:
+            name: casmella-agent-config
+        - name: openapi-operations
+          configMap:
+            name: openapi-operations

@@ -1,0 +1,52 @@
+# NWDAF-DCCF Identity
+nwdaf:
+  nfInstanceId: "58f8ec8c-8a94-5ab1-86f6-7c989cb0cb74"
+  nfType: "NWDAF"
+  ipv4Address: ""
+  nfServices:
+    - serviceInstanceId: "ndccf-datamanagement-001"
+      serviceName: "ndccf-datamanagement"
+      versions:
+        - apiVersionInUri: "v1"
+          apiFullVersion: "1.0.0"
+      scheme: "http"
+      ipEndPoints:
+        - ipv4Address: ""
+          port: 8081
+
+# NRF Registration
+nrf:
+  endpoint: "http://oai-nrf:80"
+  auto_register: true
+  heartbeat_interval: 10
+
+# Ndccf Server
+ndccf:
+  port: 8081
+  api_version: "v1"
+  data_retention_seconds: 3600
+
+# NF Event Subscriptions
+nf_subscriptions:
+  enabled: true
+  use_http2: true  # Use HTTP/2 for NF subscriptions (required for OAI AMF/SMF)
+  amf:
+    enabled: true
+    endpoint: "http://oai-amf:80"
+  smf:
+    enabled: true
+    endpoint: "http://oai-smf:80"
+
+# DCCF callback URI for receiving notifications
+dccf:
+  callback_uri: "http://oai-nwdaf-dccf:8081"
+
+# Docker Container Monitoring
+docker:
+  monitor_containers:
+    - name_pattern: "oai-amf"
+      protocols: ["http2", "ngap"]
+    - name_pattern: "oai-smf"
+      protocols: ["http2", "pfcp"]
+    - name_pattern: "vpp-upf"
+      protocols: ["gtpu", "pfcp"]

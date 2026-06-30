@@ -1,0 +1,113 @@
+==================================================
+Training MLP Model
+==================================================
+Federated Learning Rounds:  30%|██████████████████▎                                          | 15/50 [01:06<02:36,  4.47s/it, Glb_Acc=96.1566%, Global_F1=0.9614, d_W=0.000052]
+Testing MLP final model on test dataset                                                                                                                                        
+Region 0 - Accuracy: 92.7490% - F1 Score (Weighted): 0.9259 - F1 Score (Macro): 0.9616
+Region 1 - Accuracy: 100.0000% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Region 2 - Accuracy: 100.0000% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Region 3 - Accuracy: 94.4293% - F1 Score (Weighted): 0.9455 - F1 Score (Macro): 0.9688
+Region 4 - Accuracy: 95.2897% - F1 Score (Weighted): 0.9530 - F1 Score (Macro): 0.9806
+Average Regional: Accuracy: 96.4936% - F1 Score (Weighted): 0.9649 - F1 Score (Macro): 0.9822
+Global: Accuracy: 96.2981% - F1 Score (Weighted): 0.9629 - F1 Score (Macro): 0.9664
+F1 Score per class: [0.95517371 0.91734273 1.         0.99638052 0.96680738 0.96254807]
+Testing MLP final model on evaluation dataset
+Region 0 - Accuracy: 79.4518% - F1 Score (Weighted): 0.7807 - F1 Score (Macro): 0.7143
+Average Regional: Accuracy: 79.4518% - F1 Score (Weighted): 0.7807 - F1 Score (Macro): 0.7143
+Global: Accuracy: 79.4518% - F1 Score (Weighted): 0.7807 - F1 Score (Macro): 0.7143
+F1 Score per class: [0.88372487 0.87313577 0.44665012 0.39914196 0.99927473 0.68392378]
+
+==================================================
+Training CNN Model
+==================================================
+Federated Learning Rounds:  52%|███████████████████████████████▋                             | 26/50 [02:36<02:24,  6.00s/it, Glb_Acc=99.6253%, Global_F1=0.9962, d_W=0.000079]
+Testing CNN final model on test dataset                                                                                                                                        
+Region 0 - Accuracy: 99.6460% - F1 Score (Weighted): 0.9965 - F1 Score (Macro): 0.9982
+Region 1 - Accuracy: 99.8478% - F1 Score (Weighted): 0.9985 - F1 Score (Macro): 0.9984
+Region 2 - Accuracy: 99.9970% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 0.9994
+Region 3 - Accuracy: 99.7889% - F1 Score (Weighted): 0.9979 - F1 Score (Macro): 0.9983
+Region 4 - Accuracy: 98.4147% - F1 Score (Weighted): 0.9842 - F1 Score (Macro): 0.9931
+Average Regional: Accuracy: 99.5389% - F1 Score (Weighted): 0.9954 - F1 Score (Macro): 0.9975
+Global: Accuracy: 99.5363% - F1 Score (Weighted): 0.9954 - F1 Score (Macro): 0.9950
+F1 Score per class: [0.99398539 0.99626465 0.99321474 1.         0.99885135 0.98773516]
+Testing CNN final model on evaluation dataset
+Region 0 - Accuracy: 80.2098% - F1 Score (Weighted): 0.7568 - F1 Score (Macro): 0.7433
+Average Regional: Accuracy: 80.2098% - F1 Score (Weighted): 0.7568 - F1 Score (Macro): 0.7433
+Global: Accuracy: 80.2098% - F1 Score (Weighted): 0.7568 - F1 Score (Macro): 0.7433
+F1 Score per class: [0.82742573 0.93382988 0.95123684 0.01278396 0.99676927 0.73787556]
+
+==================================================
+Training RNN Model
+==================================================
+Federated Learning Rounds:  48%|█████████████████████████████▎                               | 24/50 [01:55<02:05,  4.81s/it, Glb_Acc=99.3495%, Global_F1=0.9935, d_W=0.000073]
+Testing RNN final model on test dataset                                                                                                                                        
+Region 0 - Accuracy: 98.6979% - F1 Score (Weighted): 0.9869 - F1 Score (Macro): 0.9933
+Region 1 - Accuracy: 99.9594% - F1 Score (Weighted): 0.9996 - F1 Score (Macro): 0.9996
+Region 2 - Accuracy: 100.0000% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Region 3 - Accuracy: 99.9515% - F1 Score (Weighted): 0.9995 - F1 Score (Macro): 0.9988
+Region 4 - Accuracy: 97.8092% - F1 Score (Weighted): 0.9781 - F1 Score (Macro): 0.9906
+Average Regional: Accuracy: 99.2836% - F1 Score (Weighted): 0.9928 - F1 Score (Macro): 0.9965
+Global: Accuracy: 99.3159% - F1 Score (Weighted): 0.9931 - F1 Score (Macro): 0.9929
+F1 Score per class: [0.99117517 0.98610749 0.99725827 0.99990862 0.99980407 0.98299595]
+Testing RNN final model on evaluation dataset
+Region 0 - Accuracy: 91.3819% - F1 Score (Weighted): 0.9068 - F1 Score (Macro): 0.8791
+Average Regional: Accuracy: 91.3819% - F1 Score (Weighted): 0.9068 - F1 Score (Macro): 0.8791
+Global: Accuracy: 91.3819% - F1 Score (Weighted): 0.9068 - F1 Score (Macro): 0.8791
+F1 Score per class: [0.93644766 0.90549816 0.79950154 0.64767469 0.99970009 0.98606537]
+
+==================================================
+Training LSTM Model
+==================================================
+Federated Learning Rounds:  86%|████████████████████████████████████████████████████▍        | 43/50 [07:29<01:13, 10.46s/it, Glb_Acc=99.4451%, Global_F1=0.9944, d_W=0.000090]
+Testing LSTM final model on test dataset                                                                                                                                       
+Region 0 - Accuracy: 99.9674% - F1 Score (Weighted): 0.9997 - F1 Score (Macro): 0.9998
+Region 1 - Accuracy: 99.8580% - F1 Score (Weighted): 0.9986 - F1 Score (Macro): 0.9985
+Region 2 - Accuracy: 100.0000% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Region 3 - Accuracy: 99.9927% - F1 Score (Weighted): 0.9999 - F1 Score (Macro): 0.9998
+Region 4 - Accuracy: 96.8392% - F1 Score (Weighted): 0.9685 - F1 Score (Macro): 0.9838
+Average Regional: Accuracy: 99.3315% - F1 Score (Weighted): 0.9933 - F1 Score (Macro): 0.9964
+Global: Accuracy: 99.3233% - F1 Score (Weighted): 0.9932 - F1 Score (Macro): 0.9933
+F1 Score per class: [0.99124772 0.99965733 0.99329346 0.99995431 0.99997201 0.97544933]
+Testing LSTM final model on evaluation dataset
+Region 0 - Accuracy: 85.5911% - F1 Score (Weighted): 0.8457 - F1 Score (Macro): 0.8607
+Average Regional: Accuracy: 85.5911% - F1 Score (Weighted): 0.8457 - F1 Score (Macro): 0.8607
+Global: Accuracy: 85.5911% - F1 Score (Weighted): 0.8457 - F1 Score (Macro): 0.8607
+F1 Score per class: [0.86830704 0.92319823 0.9900084  0.63191958 0.99980003 0.75110523]
+
+==================================================
+Training GRU Model
+==================================================
+Federated Learning Rounds:  74%|█████████████████████████████████████████████▏               | 37/50 [05:44<02:01,  9.32s/it, Glb_Acc=99.7075%, Global_F1=0.9971, d_W=0.000087]
+Testing GRU final model on test dataset                                                                                                                                        
+Region 0 - Accuracy: 99.9512% - F1 Score (Weighted): 0.9995 - F1 Score (Macro): 0.9998
+Region 1 - Accuracy: 99.9239% - F1 Score (Weighted): 0.9992 - F1 Score (Macro): 0.9992
+Region 2 - Accuracy: 100.0000% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Region 3 - Accuracy: 99.9951% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 0.9999
+Region 4 - Accuracy: 98.3333% - F1 Score (Weighted): 0.9834 - F1 Score (Macro): 0.9931
+Average Regional: Accuracy: 99.6407% - F1 Score (Weighted): 0.9964 - F1 Score (Macro): 0.9984
+Global: Accuracy: 99.6375% - F1 Score (Weighted): 0.9964 - F1 Score (Macro): 0.9965
+F1 Score per class: [0.99530263 0.99948591 0.99727025 0.99995431 0.99997201 0.98709547]
+Testing GRU final model on evaluation dataset
+Region 0 - Accuracy: 87.0371% - F1 Score (Weighted): 0.8634 - F1 Score (Macro): 0.8520
+Average Regional: Accuracy: 87.0371% - F1 Score (Weighted): 0.8634 - F1 Score (Macro): 0.8520
+Global: Accuracy: 87.0371% - F1 Score (Weighted): 0.8634 - F1 Score (Macro): 0.8520
+F1 Score per class: [0.90654898 0.92675537 0.75849697 0.81765978 0.99987503 0.70283313]
+
+==================================================
+Training Transformer Model
+==================================================
+Federated Learning Rounds: 100%|█████████████████████████████████████████████████████████████| 50/50 [10:13<00:00, 12.27s/it, Glb_Acc=99.9883%, Global_F1=0.9999, d_W=0.000074]
+Testing Transformer final model on test dataset                                                                                                                                
+Region 0 - Accuracy: 100.0000% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Region 1 - Accuracy: 99.9645% - F1 Score (Weighted): 0.9996 - F1 Score (Macro): 0.9996
+Region 2 - Accuracy: 100.0000% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Region 3 - Accuracy: 100.0000% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Region 4 - Accuracy: 99.9967% - F1 Score (Weighted): 1.0000 - F1 Score (Macro): 1.0000
+Average Regional: Accuracy: 99.9922% - F1 Score (Weighted): 0.9999 - F1 Score (Macro): 0.9999
+Global: Accuracy: 99.9946% - F1 Score (Weighted): 0.9999 - F1 Score (Macro): 0.9998
+F1 Score per class: [0.99992997 1.         0.99872379 1.         1.         0.99997512]
+Testing Transformer final model on evaluation dataset
+Region 0 - Accuracy: 98.2113% - F1 Score (Weighted): 0.9817 - F1 Score (Macro): 0.9839
+Average Regional: Accuracy: 98.2113% - F1 Score (Weighted): 0.9817 - F1 Score (Macro): 0.9839
+Global: Accuracy: 98.2113% - F1 Score (Weighted): 0.9817 - F1 Score (Macro): 0.9839
+F1 Score per class: [0.98151792 0.92778975 0.99439125 1.         0.99995001 0.99945969]
