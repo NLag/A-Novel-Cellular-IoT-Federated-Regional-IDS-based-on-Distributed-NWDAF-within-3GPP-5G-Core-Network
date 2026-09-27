@@ -1,0 +1,32 @@
+*.pyc
+*.log
+*.csv
+*.pt
+*.pkl
+*.h5
+*.keras
+.github/
+*.pdf
+./.venv/*
+
+# Toolchain
+# Goland project folder
+.idea/
+# Visual Studio Code
+.vscode/
+
+# debug/
+*log
+*pcap
+
+# Codex
+.codex
+
+# Old files
+.old
+
+OAI_5G_STORAGE/
+.claude/
+
+*.pth
+IDS_NWDAF_DL_Research/old_code_idea
