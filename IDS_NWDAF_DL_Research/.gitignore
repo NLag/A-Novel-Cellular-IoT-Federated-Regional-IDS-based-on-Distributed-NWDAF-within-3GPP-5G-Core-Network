@@ -56,3 +56,12 @@ instance/
 .directory
 .Trash-*
 .nfs*
+
+# dataset folder
+TA_df/
+TA_eval_df/
+datasets/*
+old_results/
+
+# results folder
+result*/
