@@ -15,6 +15,8 @@ The work spans two complementary tracks:
 
 | Path | Role |
 |------|------|
+| [`Third-Contribution/`](Third-Contribution/) | The journal manuscript (`journal-v6.tex`), bibliography, and the point-by-point reviewer response (`Reviewer_Comments.md`). |
+| [`docs/`](docs/) | Thesis-style chapter notes (abstracts, abbreviations, the three contributions, appendix). |
 | [`IDS_NWDAF_DL_Research/`](IDS_NWDAF_DL_Research/) | Research Python workspace: model architectures + training (`IDS_lib.py`), the four training procedures (`DL_multiclass_*.py`), the parameterised MTLF entry point (`mtlf_train.py`), dataset builders, datasets, and reviewer-rebuttal experiments (`rebuttal_results/`). |
 | [`IDS/`](IDS/) | The IDS network-function prototype (`components/oai-ids`): NRF registration, GTP-U capture, PyTorch detector + sliding-window alert gate, dataset capture, and observe-only countermeasures. See [`IDS/PLAN_IDS.md`](IDS/PLAN_IDS.md) / [`IDS/PROGRESS_IDS.md`](IDS/PROGRESS_IDS.md). |
 | [`oai-cn5g-nwdaf/`](oai-cn5g-nwdaf/) | Custom IDS-oriented NWDAF (MTLF / DCCF / NBI / engine), derived from OAI. See [`oai-cn5g-nwdaf/PROGRESS_NWDAF.md`](oai-cn5g-nwdaf/PROGRESS_NWDAF.md). |

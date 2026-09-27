@@ -12,15 +12,15 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 QUIET = False
 DEBUG = False
 
-# Data file path
-TRAIN_DATA_PATH = './datasets/simple_federated_datasets/train/'
-EVAL_DATA_PATH = './datasets/simple_federated_datasets/eval/'
-
-train_loaders, validation_loaders, test_loaders, eval_loader = load_private_region_datasets(TRAIN_DATA_PATH, EVAL_DATA_PATH, quiet=QUIET)
+# Data file path used by the journal's centralized and federated experiments.
+TRAIN_DATA_PATH = './datasets/federated_datasets_noslowite_nosqlmap/train/'
+EVAL_DATA_PATH = './datasets/federated_datasets_noslowite_nosqlmap/eval/'
 
 ################### Training ###################
 
-def train_regional_models(models, train_loaders, validation_loaders, test_loaders, quiet=True, debug=False):
+def train_regional_models(models, train_loaders, validation_loaders, test_loaders,
+                          epochs=50, patience=5, min_delta=DELTA_LOSS,
+                          quiet=True, debug=False):
     """
     Train regional models on the given dataset.
     Each model is trained on its respective region's training data.
@@ -28,7 +28,17 @@ def train_regional_models(models, train_loaders, validation_loaders, test_loader
     best_vlosses = [float('inf')] * len(models)
     for i, model in enumerate(models):
         print(f"Training model for region {i+1}")
-        vloss = training_model(model, train_loaders[i], validation_loaders[i], epochs=50, quiet=quiet, debug=debug, model_name=f"Regional model {i+1}")
+        vloss = training_model(
+            model,
+            train_loaders[i],
+            validation_loaders[i],
+            epochs=epochs,
+            patience=patience,
+            min_delta=min_delta,
+            quiet=quiet,
+            debug=debug,
+            model_name=f"Regional model {i+1}",
+        )
         
         # Evaluate the model on the test dataset
         results = evaluate_centralized_model(model, test_loaders[i], quiet=quiet, debug=debug)
@@ -108,6 +118,10 @@ def evaluate_centralized_model(model, test_loader, quiet=True, debug=False):
 ################### Main ###################
 
 if __name__ == "__main__":
+    train_loaders, validation_loaders, test_loaders, eval_loader = load_private_region_datasets(
+        TRAIN_DATA_PATH, EVAL_DATA_PATH, quiet=QUIET
+    )
+
     # Initialize the model
     models = []
     for i in range(NUM_REGION):
@@ -116,7 +130,17 @@ if __name__ == "__main__":
         models.append(model)
 
     # Train the model
-    best_vlosses = train_regional_models(models, train_loaders, validation_loaders, test_loaders, quiet=QUIET, debug=DEBUG)
+    best_vlosses = train_regional_models(
+        models,
+        train_loaders,
+        validation_loaders,
+        test_loaders,
+        epochs=50,
+        patience=5,
+        min_delta=DELTA_LOSS,
+        quiet=QUIET,
+        debug=DEBUG,
+    )
     
     # Evaluate the model on the evaluation dataset
     # Evaluate each model on the evaluation dataset

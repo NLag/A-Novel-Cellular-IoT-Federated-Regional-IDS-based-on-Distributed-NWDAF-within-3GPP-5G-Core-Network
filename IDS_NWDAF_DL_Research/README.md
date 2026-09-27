@@ -14,13 +14,28 @@ Core code:
 - `DL_multiclass_federated.py`: federated learning workflow using regional private datasets and model-weight averaging.
 - `DL_multiclass_Federated_Distillation.py`: federated distillation workflow using public/shared data plus regional private data.
 - `DL_multiclass_regional_models.py`: trains separate regional models, currently against the simple federated dataset split.
+- `emulation_start.sh`: SSH/screen automation for collecting NAS traffic during IoT emulation on an external lab.
+- `result_analyse.ipynb`, `test.ipynb`: result inspection and experimental notebooks.
 - `train_test_data_federated_simple.ipynb`, `train_test_data_federated_realistic.ipynb`, and notebooks under `datasets/`: dataset preparation notebooks.
+- `old_code_idea/`: older experimental ideas kept for reference.
 - `requirements.txt`: dependency list inferred from the current scripts.
 
 Large data/artifact areas:
 
 - `datasets/`: raw and prepared NAS traffic datasets.
+- `TA_df/`, `TA_eval_df/`: generated regional training/evaluation CSV datasets.
+- `result*/`, `old_results/`, `result_centralized0809/`: generated checkpoints, pickled metrics, confusion matrices, and convergence plots.
+- `result0607_savedmodels/`, `result0707_savedmodels/`: large saved-model/result snapshots.
 
+The existing `.gitignore` already excludes the main dataset and result directories:
+
+```text
+TA_df/
+TA_eval_df/
+datasets/*
+old_results/
+result*/
+```
 
 ## Dataset Warning
 
@@ -29,12 +44,18 @@ Many files in this directory are large CSV, PKL, ZIP, PNG, or PTH artifacts. Do 
 Current size snapshot from inspection:
 
 - `datasets/`: about 1.2 GB.
+- `result0607_savedmodels/`: about 617 MB.
+- `result0707_savedmodels/`: about 617 MB.
+- `result0407/`: about 424 MB.
+- `TA_df/`: about 117 MB.
+- `TA_eval_df/`: about 103 MB.
+- Full workspace: about 3.8 GB.
 
 Active training scripts currently point to:
 
 ```text
-./datasets/federated_datasets/train/
-./datasets/federated_datasets/eval/
+./datasets/federated_datasets_noslowite_nosqlmap/train/
+./datasets/federated_datasets_noslowite_nosqlmap/eval/
 ```
 
 That prepared split contains:
@@ -43,14 +64,21 @@ That prepared split contains:
 - `train/private/private_region_dataset_1.csv` through `private_region_dataset_5.csv`
 - `eval/Combined_eval_dataset.csv`
 
+Other prepared splits include:
+
+- `datasets/simple_federated_datasets/`
+- `datasets/federated_datasets_noslowite/`
+- `datasets/realistic_federated_datasets/`
 
 Raw or scenario-specific dataset folders include:
 
 - `normal`
 - `coap_dos`
 - `mqttPUBflood`
+- `mqttslowdos`
 - `pingflood`
 - `port_scan`
+- `sqlmap`
 - `tcpflood`
 
 CSV rows appear to follow the feature order listed in `datasets/Feature_name.dat`, starting with:
@@ -204,6 +232,21 @@ Run the lightweight normalization tests with:
 cd IDS_NWDAF_DL_Research
 python3 -m unittest discover -s tests
 ```
+
+## Emulation Script
+
+`emulation_start.sh` automates an external traffic-generation setup. It assumes:
+
+- SSH host aliases: `Core5G`, `UESimbox`, `MqttServer`
+- `screen` installed on remote hosts
+- LTE service management via `service lte restart`
+- remote scripts:
+  - `/root/IDS_DL/regional_NAS_dataset/extract_NAS.py`
+  - `/root/IoTClient/executeIoT.sh`
+- MQTT and CoAP services on `MqttServer`
+- local file `mqtt_reset_num` containing the sudo password/input used by the script
+
+Do not run this script unless the external lab hosts and credentials are intentionally configured.
 
 ## Result Artifacts
 
